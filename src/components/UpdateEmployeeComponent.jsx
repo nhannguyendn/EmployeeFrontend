@@ -89,7 +89,7 @@ class UpdateEmployeeComponent extends Component {
                                             value={this.state.emailId} onChange={this.onChangeEmailAddressHanlder} />
                                     </div>
 
-                                    <button className='btn-add' style={{ marginTop: "10px" }} onClick={this.updateEmployee}>Update</button>
+                                    <button className='btn-positive' style={{ marginTop: "10px" }} onClick={this.updateEmployee}>Update</button>
                                     <button className='btn-cancel' style={{ marginTop: "10px", marginLeft: "10px" }} onClick={this.cancel.bind(this)}>Cancel</button>
                                 </form>
                             </div>

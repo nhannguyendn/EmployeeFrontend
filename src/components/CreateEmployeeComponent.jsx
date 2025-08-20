@@ -60,9 +60,9 @@ class CreateEmployeeComponent extends Component {
 
     getButtonText() {
         if (this.state.id === 'new') {
-            return <button className='btn-add' style={{ marginTop: "10px" }} onClick={this.saveEmployee}>Add</button>;
+            return <button className='btn-positive' style={{ marginTop: "10px" }} onClick={this.saveEmployee}>Add</button>;
         } else {
-            return <button className='btn-add' style={{ marginTop: "10px" }} onClick={this.saveEmployee}>Update</button>;
+            return <button className='btn-positive' style={{ marginTop: "10px" }} onClick={this.saveEmployee}>Update</button>;
         }
     }
 

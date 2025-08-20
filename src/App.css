@@ -26,11 +26,10 @@ html, body, #root {
   margin-bottom: 5px;
 }
 
-/* Nút Add */
-.btn-add {
-  background-color: #28a745;       /* Xanh lá */
+.btn-positive {
+  background-color: #28a745;      
   color: white;
-  border: 2px solid #28a745;       /* Stroke cùng màu */
+  border: 2px solid #28a745;       
   padding: 8px 16px;
   border-radius: 6px;
   font-weight: bold;
@@ -38,20 +37,19 @@ html, body, #root {
   transition: all 0.3s ease;
 }
 
-.btn-add:hover {
+.btn-positive:hover {
   background-color: white;
   color: #28a745;
   border-color: #28a745;
 }
 
-.btn-add:active {
+.btn-positive:active {
   background-color: #218838;
   color: white;
 }
 
-/* Nút Cancel */
 .btn-cancel {
-  background-color: #dc3545;       /* Đỏ */
+  background-color: #dc3545;       
   color: white;
   border: 2px solid #dc3545;
   padding: 8px 16px;
@@ -84,7 +82,7 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start; /* thay center bằng flex-start */
+  justify-content: flex-start; 
   padding-top: 20px;     
   font-size: calc(10px + 2vmin);
   color: white;
