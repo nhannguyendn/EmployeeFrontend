@@ -19,6 +19,11 @@ html, body, #root {
   pointer-events: none;
 }
 
+.App-avatar {
+  height: 80px;
+  pointer-events: none;
+}
+
 .form-group label {
   text-align: left !important;
   display: block;
