@@ -1,10 +1,14 @@
 package com.example.employee.employee.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -66,5 +70,28 @@ public class EmployeeController {
         employee.setLastName(employeeDetails.getLastName());
         Employee employeeUpdated = employeeRespository.save(employee);
         return ResponseEntity.ok(employeeUpdated);
+    }
+
+    /**
+     * Delete employeee with id
+     */
+
+    @DeleteMapping("/employees/{employeeId}")
+    public ResponseEntity<Map<String, Boolean>> deleteEmployee(@PathVariable Long employeeId) {
+        Map<String, Boolean> result = new HashMap<>();
+
+        Optional<Employee> employeeOpt = employeeRespository.findById(employeeId);
+
+        // Employee employee = employeeRespository.findById(employeeId)
+        // .orElseThrow(() -> new ResoureNotFoundException("Not found employee id =" +
+        // employeeId));
+
+        if (employeeOpt.isPresent()) {
+            employeeRespository.delete(employeeOpt.get());
+            result.put("Deleted", true);
+        } else {
+            result.put("Deleted", false);
+        }
+        return ResponseEntity.ok(result);
     }
 }
