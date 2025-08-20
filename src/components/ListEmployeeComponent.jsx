@@ -15,11 +15,12 @@ class ListEmployeeComponent extends Component {
     }
 
     addEmployee = (e) => {
-        this.props.navigate("/add-employee");
+        this.props.navigate("/add-employee/new");
     }
 
     updateEmployee(id) {
-        this.props.navigate(`/update-employee/${id}`)
+        this.props.navigate(`/add-employee/${id}`)
+        //this.props.navigate(`/update-employee/${id}`)
     }
 
     componentDidMount() {
