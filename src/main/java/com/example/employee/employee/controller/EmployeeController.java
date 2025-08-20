@@ -3,13 +3,17 @@ package com.example.employee.employee.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.employee.employee.exception.ResoureNotFoundException;
 import com.example.employee.employee.model.Employee;
 import com.example.employee.employee.respository.EmployeeRespository;
 
@@ -34,9 +38,33 @@ public class EmployeeController {
     /**
      * Create employee
      */
-
     @PostMapping("/employees")
     public Employee createEmployee(@RequestBody Employee employee) {
         return employeeRespository.save(employee);
+    }
+
+    /**
+     * Get employee by id
+     */
+    @GetMapping("/employees/{employeeId}")
+    public ResponseEntity<Employee> getEmployeesById(@PathVariable Long employeeId) {
+        return employeeRespository.findById(employeeId).map(employee -> ResponseEntity.ok(employee))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Update employee with id
+     */
+    @PutMapping("/employees/{employeeId}")
+    public ResponseEntity<Employee> updateEmployees(@PathVariable Long employeeId,
+            @RequestBody Employee employeeDetails) {
+        Employee employee = employeeRespository.findById(employeeId)
+                .orElseThrow(() -> new ResoureNotFoundException("Not found employee id=" + employeeId));
+
+        employee.setEmailId(employeeDetails.getEmailId());
+        employee.setFirstName(employeeDetails.getFirstName());
+        employee.setLastName(employeeDetails.getLastName());
+        Employee employeeUpdated = employeeRespository.save(employee);
+        return ResponseEntity.ok(employeeUpdated);
     }
 }
