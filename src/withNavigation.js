@@ -1,8 +1,9 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export function withNavigation(Component) {
   return function Wrapper(props) {
     const navigate = useNavigate();
-    return <Component {...props} navigate={navigate} />;
+    const params = useParams();
+    return <Component {...props} navigate={navigate} params={params} />;
   };
 }

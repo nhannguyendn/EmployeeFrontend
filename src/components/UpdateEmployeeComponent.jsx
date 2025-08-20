@@ -3,11 +3,12 @@ import PropTypes from 'prop-types';
 import { withNavigation } from '../withNavigation';
 import employeeService from '../services/EmployeeService';
 
-class CreateEmployeeComponent extends Component {
+class UpdateEmployeeComponent extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
+            id: this.props.params.id,
             firstName: '',
             lastName: '',
             emailId: ''
@@ -16,17 +17,29 @@ class CreateEmployeeComponent extends Component {
         this.onChangeFirstNameHandler = this.onChangeFirstNameHandler.bind(this);
         this.onChangeLastNameHanlder = this.onChangeLastNameHanlder.bind(this);
         this.onChangeEmailAddressHanlder = this.onChangeEmailAddressHanlder.bind(this);
-        this.saveEmployee = this.saveEmployee.bind(this);
+        this.updateEmployee = this.updateEmployee.bind(this);
     }
 
-    saveEmployee = (e) => {
+    updateEmployee = (e) => {
         e.preventDefault();
 
         let employee = { firstName: this.state.firstName, lastName: this.state.lastName, emailId: this.state.emailId };
         console.log("employee => " + JSON.stringify(employee));
 
-        employeeService.createEmployee(employee).then((res) => {
+        employeeService.updateEmployee(this.state.id, employee).then((res) => {
             this.props.navigate("/employees");
+        });
+
+    }
+
+    componentDidMount() {
+        employeeService.getEmployeeById(this.state.id).then((res) => {
+            let employee = res.data;
+            this.setState({
+                firstName: employee.firstName,
+                lastName: employee.lastName,
+                emailId: employee.emailId
+            })
         })
     }
 
@@ -54,7 +67,7 @@ class CreateEmployeeComponent extends Component {
 
                         <div className='card col-md-6 offset-md-3 offset-md-3'>
 
-                            <h3 className='text-center' style={{ margin: "10px" }}>Add Employee</h3>
+                            <h3 className='text-center' style={{ margin: "10px" }}>Update Employee</h3>
 
                             <div className='card-body'>
                                 <form>
@@ -76,7 +89,7 @@ class CreateEmployeeComponent extends Component {
                                             value={this.state.emailId} onChange={this.onChangeEmailAddressHanlder} />
                                     </div>
 
-                                    <button className='btn-add' style={{ marginTop: "10px" }} onClick={this.saveEmployee}>Add</button>
+                                    <button className='btn-add' style={{ marginTop: "10px" }} onClick={this.updateEmployee}>Update</button>
                                     <button className='btn-cancel' style={{ marginTop: "10px", marginLeft: "10px" }} onClick={this.cancel.bind(this)}>Cancel</button>
                                 </form>
                             </div>
@@ -89,4 +102,4 @@ class CreateEmployeeComponent extends Component {
     }
 }
 
-export default withNavigation(CreateEmployeeComponent);
+export default withNavigation(UpdateEmployeeComponent);

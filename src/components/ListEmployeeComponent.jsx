@@ -18,6 +18,10 @@ class ListEmployeeComponent extends Component {
         this.props.navigate("/add-employee");
     }
 
+    updateEmployee(id) {
+        this.props.navigate(`/update-employee/${id}`)
+    }
+
     componentDidMount() {
         EmployeeService.getEmployees().then((res) => {
             this.setState({ employees: res.data });
@@ -40,6 +44,7 @@ class ListEmployeeComponent extends Component {
                                 <th>First name employee</th>
                                 <th>Last name employee</th>
                                 <th>Email employee</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
 
@@ -52,6 +57,7 @@ class ListEmployeeComponent extends Component {
                                             <td>{employee.firstName}</td>
                                             <td>{employee.lastName}</td>
                                             <td>{employee.emailId}</td>
+                                            <td><button className = "btn-add" onClick={() => this.updateEmployee(employee.id)}>Update</button></td>
                                         </tr>
                                 )
 
