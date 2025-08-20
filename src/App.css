@@ -15,8 +15,61 @@ html, body, #root {
 }
 
 .App-logo {
-  height: 10vmin;
+  height: 5vmin;
   pointer-events: none;
+}
+
+.form-group label {
+  text-align: left !important;
+  display: block;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+/* Nút Add */
+.btn-add {
+  background-color: #28a745;       /* Xanh lá */
+  color: white;
+  border: 2px solid #28a745;       /* Stroke cùng màu */
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+  background-color: white;
+  color: #28a745;
+  border-color: #28a745;
+}
+
+.btn-add:active {
+  background-color: #218838;
+  color: white;
+}
+
+/* Nút Cancel */
+.btn-cancel {
+  background-color: #dc3545;       /* Đỏ */
+  color: white;
+  border: 2px solid #dc3545;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+  background-color: white;
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-cancel:active {
+  background-color: #c82333;
+  color: white;
 }
 
 @media (prefers-reduced-motion: no-preference) {

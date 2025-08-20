@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import EmployeeService from '../services/EmployeeService';
+import { withNavigation } from "../withNavigation"; // ✅ đi từ components ra src
 
 class ListEmployeeComponent extends Component {
 
@@ -9,6 +10,12 @@ class ListEmployeeComponent extends Component {
         this.state = {
             employees: []
         }
+
+        this.addEmployee = this.addEmployee.bind(this);
+    }
+
+    addEmployee = (e) => {
+        this.props.navigate("/add-employee");
     }
 
     componentDidMount() {
@@ -20,7 +27,10 @@ class ListEmployeeComponent extends Component {
     render() {
         return (
             <div>
-                <h2 className='text_center'>Employees List</h2>
+                <h2 className='text_center' style={{ margin: "50px" }}>Employees List</h2>
+                <div className='row'>
+                    <button className='btn btn-primary' onClick={this.addEmployee} style={{ width: "auto", margin: "10px" }}>Add Employee</button>
+                </div>
                 <div className='row'>
                     <table className='table table-striped table-bordered'>
 
@@ -54,4 +64,4 @@ class ListEmployeeComponent extends Component {
     }
 }
 
-export default ListEmployeeComponent
+export default withNavigation(ListEmployeeComponent);
