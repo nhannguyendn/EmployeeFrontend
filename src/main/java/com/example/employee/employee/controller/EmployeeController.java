@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.employee.employee.exception.ResoureNotFoundException;
@@ -94,4 +95,24 @@ public class EmployeeController {
         }
         return ResponseEntity.ok(result);
     }
+
+    /**
+     * Search employees by firstName or lastName
+     */
+    @GetMapping("/employees/search")
+    public ResponseEntity<List<Employee>> searchEmployees(@RequestParam("name") String name) {
+        List<Employee> employees = employeeRespository
+                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(name, name);
+        return ResponseEntity.ok(employees);
+    }
+
+    /**
+     * Search employees by email (LIKE %email%)
+     */
+    @GetMapping("/employees/search-email")
+    public ResponseEntity<List<Employee>> searchEmailEmployee(@RequestParam("emailId") String email) {
+        List<Employee> employees = employeeRespository.findByEmailIdContainingIgnoreCase(email);
+        return ResponseEntity.ok(employees);
+    }
+
 }
