@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,6 +50,7 @@ public class EmployeeController {
      * Create employee
      */
     @PostMapping("/employees")
+    @Transactional
     public Employee createEmployee(@RequestBody Employee employee) {
         return employeeRespository.save(employee);
     }
@@ -57,6 +59,7 @@ public class EmployeeController {
      * Get employee by id
      */
     @GetMapping("/employees/{employeeId}")
+    @Transactional(readOnly = true)
     public ResponseEntity<Employee> getEmployeesById(@PathVariable Long employeeId) {
         return employeeRespository.findById(employeeId).map(employee -> ResponseEntity.ok(employee))
                 .orElse(ResponseEntity.notFound().build());
@@ -66,6 +69,7 @@ public class EmployeeController {
      * Update employee with id
      */
     @PutMapping("/employees/{employeeId}")
+    @Transactional
     public ResponseEntity<Employee> updateEmployees(@PathVariable Long employeeId,
             @RequestBody Employee employeeDetails) {
         Employee employee = employeeRespository.findById(employeeId)
@@ -83,6 +87,7 @@ public class EmployeeController {
      */
 
     @DeleteMapping("/employees/{employeeId}")
+    @Transactional
     public ResponseEntity<Map<String, Boolean>> deleteEmployee(@PathVariable Long employeeId) {
         Map<String, Boolean> result = new HashMap<>();
 
