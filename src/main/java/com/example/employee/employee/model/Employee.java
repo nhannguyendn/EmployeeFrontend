@@ -1,5 +1,7 @@
 package com.example.employee.employee.model;
 
+import java.util.List;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -22,6 +24,21 @@ public class Employee {
 
 	@Column(name = "email_id")
 	private String emailId;
+
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "card_id") // Khóa ngoại nằm ở bảng employees
+	private EmployeeCard card;
+
+	@ManyToMany
+	@JoinTable(name = "employee_project", // Tên bảng trung gian
+			joinColumns = @JoinColumn(name = "employee_id"), // Khóa ngoại trỏ tới bảng Employee
+			inverseJoinColumns = @JoinColumn(name = "project_id") // Khóa ngoại trỏ tới bảng Project
+	)
+	private List<Project> projects;
+
+	@ManyToOne
+	@JoinColumn(name = "team_id")
+	private Team team;
 
 	public Employee() {
 
