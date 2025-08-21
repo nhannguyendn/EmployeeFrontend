@@ -6,6 +6,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.employee.employee.dto.PagedResponse;
 import com.example.employee.employee.exception.ResoureNotFoundException;
 import com.example.employee.employee.model.Employee;
 import com.example.employee.employee.respository.EmployeeRespository;
@@ -112,6 +117,64 @@ public class EmployeeController {
     @GetMapping("/employees/search-email")
     public ResponseEntity<List<Employee>> searchEmailEmployee(@RequestParam("emailId") String email) {
         List<Employee> employees = employeeRespository.findByEmailIdContainingIgnoreCase(email);
+        return ResponseEntity.ok(employees);
+    }
+
+    /**
+     * Search employees by name or email (LIKE %email%)
+     */
+    @GetMapping("/employees/keywork")
+    public ResponseEntity<List<Employee>> searchKeywordEmployee(@RequestParam("keyword") String keyword) {
+        List<Employee> employees = employeeRespository.searchEmployees(keyword);
+        return ResponseEntity.ok(employees);
+    }
+
+    /**
+     * Search employees by keyword (email or firstName) + pagination + sort
+     */
+    @GetMapping("/employees/search-keywork")
+    public ResponseEntity<PagedResponse<Employee>> searchByKeywordPage(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                sortDir.equalsIgnoreCase("asc")
+                        ? Sort.by(sortBy).ascending()
+                        : Sort.by(sortBy).descending());
+
+        // public ResponseEntity<Page<Employee>> searchByKeywordPage(
+        Page<Employee> employees = employeeRespository.searchByKeywordPageWithMetadata(keyword, pageable);
+        // return ResponseEntity.ok(employees);
+        // custom response
+        return ResponseEntity.ok(PagedResponse.fromPage(employees));
+
+        // List<Employee> employees = employeeRespository.searchByKeywordPage(keyword,
+        // pageable);
+        // return ResponseEntity.ok(employees);
+    }
+
+    /**
+     * Search employees by firstName or lastName
+     */
+    @GetMapping("/employees/email")
+    public ResponseEntity<List<Employee>> findByEmail(@RequestParam("email") String name) {
+        List<Employee> employees = employeeRespository
+                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(name, name);
+        return ResponseEntity.ok(employees);
+    }
+
+    /**
+     * Search employees by firstName or lastName
+     */
+    @GetMapping("/employees/firstName")
+    public ResponseEntity<List<Employee>> findByFirstName(@RequestParam("firstName") String name) {
+        List<Employee> employees = employeeRespository
+                .findByFirstName(name);
         return ResponseEntity.ok(employees);
     }
 
