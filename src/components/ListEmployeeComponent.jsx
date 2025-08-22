@@ -33,7 +33,8 @@ class ListEmployeeComponent extends Component {
     }
 
     viewEmployee(id) {
-        this.props.navigate(`/view-employee/${id}`);
+        //this.props.navigate(`/view-employee/${id}`); // ViewEmployeeComponent: class component with state
+        this.props.navigate(`/view-employee-function/${id}`); // ViewEmployeeComponentFunction: Function component with useState + useEffect
     }
 
     componentDidMount() {
