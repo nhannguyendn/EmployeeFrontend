@@ -26,13 +26,13 @@ public class Employee {
 	private String emailId;
 
 	@OneToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "card_id") // Khóa ngoại nằm ở bảng employees
+	@JoinColumn(name = "card_id") // Foreign key in employees
 	private EmployeeCard card;
 
 	@ManyToMany
-	@JoinTable(name = "employee_project", // Tên bảng trung gian
-			joinColumns = @JoinColumn(name = "employee_id"), // Khóa ngoại trỏ tới bảng Employee
-			inverseJoinColumns = @JoinColumn(name = "project_id") // Khóa ngoại trỏ tới bảng Project
+	@JoinTable(name = "employee_project", // table intermediary
+			joinColumns = @JoinColumn(name = "employee_id"), // Foreign key to table Employee
+			inverseJoinColumns = @JoinColumn(name = "project_id") // Foreign key in to table Project
 	)
 	private List<Project> projects;
 

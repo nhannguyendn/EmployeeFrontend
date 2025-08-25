@@ -57,6 +57,7 @@ public class EmployeeController {
     @PostMapping("/employees")
     @Transactional
     public Employee createEmployee(@RequestBody Employee employee) {
+        // todo add employe to card
         return employeeRespository.save(employee);
     }
 
@@ -84,6 +85,7 @@ public class EmployeeController {
         employee.setFirstName(employeeDetails.getFirstName());
         employee.setLastName(employeeDetails.getLastName());
         Employee employeeUpdated = employeeRespository.save(employee);
+        //todo: Check table project, team, card to update employee 
         return ResponseEntity.ok(employeeUpdated);
     }
 
@@ -104,6 +106,7 @@ public class EmployeeController {
 
         if (employeeOpt.isPresent()) {
             employeeRespository.delete(employeeOpt.get());
+            //todo: Check table project, team, card to delete employee 
             result.put("Deleted", true);
         } else {
             result.put("Deleted", false);
