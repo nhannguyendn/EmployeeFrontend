@@ -27,7 +27,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.employee.employee.dto.PagedResponse;
 import com.example.employee.employee.exception.ResoureNotFoundException;
+import com.example.employee.employee.model.Employee;
 import com.example.employee.employee.model.Team;
+import com.example.employee.employee.respository.EmployeeRespository;
 import com.example.employee.employee.respository.TeamRespository;
 
 @CrossOrigin(origins = "http://localhost:3000")
@@ -39,6 +41,8 @@ public class TeamController {
 
     @Autowired
     private TeamRespository teamRespository;
+    @Autowired
+    private EmployeeRespository employeeRepository;
 
     /**
      * Get list Team
@@ -54,7 +58,7 @@ public class TeamController {
      */
     @PostMapping("/teams")
     @Transactional
-    public Team createEmployee(@RequestBody Team team) {
+    public Team createTeam(@RequestBody Team team) {
         return teamRespository.save(team);
     }
 
@@ -71,6 +75,28 @@ public class TeamController {
     /**
      * Update team with id
      */
+    @PutMapping("/teams/add-employees/{teamId}")
+    @Transactional
+    public ResponseEntity<Team> addEmployee(@PathVariable Long teamId,
+            @RequestBody List<Employee> employees) {
+        Team team = teamRespository.findById(teamId)
+                .orElseThrow(() -> new ResoureNotFoundException("Not found team id=" + teamId));
+
+        for (Employee e : employees) {
+            e.setTeam(team); 
+        }
+
+        employeeRepository.saveAll(employees);
+
+        team.getEmployees().addAll(employees);
+        teamRespository.save(team);
+
+        return ResponseEntity.ok(team);
+    }
+
+    /**
+     * Update team with id
+     */
     @PutMapping("/teams/{teamId}")
     @Transactional
     public ResponseEntity<Team> updateTeams(@PathVariable Long teamId,
@@ -82,7 +108,7 @@ public class TeamController {
         team.setDescriptions(teamDetails.getDescriptions());
         team.setEmployees(teamDetails.getEmployees());
         Team teamUpdated = teamRespository.save(team);
-        //todo: Check table employee to update team 
+        // todo: Check table employee to update team
         return ResponseEntity.ok(teamUpdated);
     }
 
@@ -99,7 +125,7 @@ public class TeamController {
 
         if (prOptional.isPresent()) {
             teamRespository.delete(prOptional.get());
-            //todo: Check table employee to delete team 
+            // todo: Check table employee to delete team
             result.put("Deleted", true);
         } else {
             result.put("Deleted", false);
@@ -120,7 +146,7 @@ public class TeamController {
      * Search team by name (LIKE %name%)
      */
     @GetMapping("/team/keywork")
-    public ResponseEntity<List<Team>> searchKeywordEmployee(@RequestParam("keyword") String keyword) {
+    public ResponseEntity<List<Team>> searchKeywordTeam(@RequestParam("keyword") String keyword) {
         List<Team> teams = teamRespository.searchTeams(keyword);
         return ResponseEntity.ok(teams);
     }

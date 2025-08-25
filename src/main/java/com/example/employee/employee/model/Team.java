@@ -3,6 +3,8 @@ package com.example.employee.employee.model;
 import java.util.List;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "team")
@@ -15,6 +17,7 @@ public class Team {
 
     private String descriptions;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
     private List<Employee> employees;
 

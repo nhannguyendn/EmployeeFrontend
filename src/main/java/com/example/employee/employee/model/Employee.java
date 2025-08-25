@@ -39,6 +39,7 @@ public class Employee {
 	)
 	private List<Project> projects;
 
+	@JsonBackReference
 	@ManyToOne
 	@JoinColumn(name = "team_id")
 	private Team team;
@@ -93,4 +94,21 @@ public class Employee {
 	public EmployeeCard getCard() {
 		return card;
 	}
+
+	public void setTeam(Team team) {
+		this.team = team;
+	}
+
+	public Team getTeam() {
+		return team;
+	}
+
+	public void setProjects(List<Project> projects) {
+		this.projects = projects;
+	}
+
+	public List<Project> getProjects() {
+		return projects;
+	}
+
 }
