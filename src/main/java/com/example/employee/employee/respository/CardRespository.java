@@ -15,4 +15,7 @@ import com.example.employee.employee.model.EmployeeCard;
 public interface CardRespository extends JpaRepository<EmployeeCard, Long> {
 
         List<EmployeeCard> findByCardNumberContainingIgnoreCase(String cardNumber);
+
+        @Query("SELECT MAX(e.cardNumber) FROM EmployeeCard e")
+        String findMaxCardNumber();
 }

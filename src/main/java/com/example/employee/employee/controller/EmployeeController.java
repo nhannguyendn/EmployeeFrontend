@@ -25,9 +25,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.employee.employee.dto.EmployeeDTO;
 import com.example.employee.employee.dto.PagedResponse;
 import com.example.employee.employee.exception.ResoureNotFoundException;
 import com.example.employee.employee.model.Employee;
+import com.example.employee.employee.model.EmployeeCard;
+import com.example.employee.employee.respository.CardRespository;
 import com.example.employee.employee.respository.EmployeeRespository;
 
 @CrossOrigin(origins = "http://localhost:3000")
@@ -39,6 +42,8 @@ public class EmployeeController {
 
     @Autowired
     private EmployeeRespository employeeRespository;
+    @Autowired
+    private CardRespository cardRespository;
 
     /**
      * get employees
@@ -57,7 +62,13 @@ public class EmployeeController {
     @PostMapping("/employees")
     @Transactional
     public Employee createEmployee(@RequestBody Employee employee) {
-        // todo add employe to card
+        String newCardNumber = generateNextCardNumber();
+        EmployeeCard card = new EmployeeCard();
+        card.setCardNumber(newCardNumber);
+        // card.setEmployee(employee);
+
+        employee.setCard(card);
+
         return employeeRespository.save(employee);
     }
 
@@ -85,7 +96,7 @@ public class EmployeeController {
         employee.setFirstName(employeeDetails.getFirstName());
         employee.setLastName(employeeDetails.getLastName());
         Employee employeeUpdated = employeeRespository.save(employee);
-        //todo: Check table project, team, card to update employee 
+        // todo: Check table project, team, card to update employee
         return ResponseEntity.ok(employeeUpdated);
     }
 
@@ -106,7 +117,7 @@ public class EmployeeController {
 
         if (employeeOpt.isPresent()) {
             employeeRespository.delete(employeeOpt.get());
-            //todo: Check table project, team, card to delete employee 
+            // todo: Check table project, team, card to delete employee
             result.put("Deleted", true);
         } else {
             result.put("Deleted", false);
@@ -189,6 +200,21 @@ public class EmployeeController {
         List<Employee> employees = employeeRespository
                 .findByFirstName(name);
         return ResponseEntity.ok(employees);
+    }
+
+    private String generateNextCardNumber() {
+        String prefix = "EMP";
+        String maxCard = cardRespository.findMaxCardNumber();
+
+        long next = 1L;
+        if (maxCard != null && maxCard.startsWith(prefix)) {
+            next = Long.parseLong(maxCard.substring(prefix.length())) + 1;
+        }
+
+        int minDigits = 4;
+        int digits = Math.max(minDigits, String.valueOf(next).length());
+
+        return prefix + String.format("%0" + digits + "d", next);
     }
 
 }

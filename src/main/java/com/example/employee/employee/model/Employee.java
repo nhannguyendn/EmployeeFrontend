@@ -3,6 +3,8 @@ package com.example.employee.employee.model;
 import java.util.List;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "employees")
@@ -25,7 +27,8 @@ public class Employee {
 	@Column(name = "email_id")
 	private String emailId;
 
-	@OneToOne(cascade = CascadeType.ALL)
+	@JsonManagedReference
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "card_id") // Foreign key in employees
 	private EmployeeCard card;
 
@@ -81,5 +84,13 @@ public class Employee {
 
 	public void setEmailId(String emailId) {
 		this.emailId = emailId;
+	}
+
+	public void setCard(EmployeeCard card) {
+		this.card = card;
+	}
+
+	public EmployeeCard getCard() {
+		return card;
 	}
 }

@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.employee.employee.dto.EmployeeCardDTO;
 import com.example.employee.employee.dto.PagedResponse;
 import com.example.employee.employee.exception.ResoureNotFoundException;
 import com.example.employee.employee.model.EmployeeCard;
@@ -44,9 +45,14 @@ public class CardController {
      * Get list Cards
      */
     @GetMapping("/cards")
-    public List<EmployeeCard> getAllCard() {
+    public List<EmployeeCardDTO> getAllCard() {
         logger.info("getAllCard");
-        return cardRespository.findAll();
+        return cardRespository.findAll()
+                .stream()
+                .map(card -> new EmployeeCardDTO(card.getId(),
+                        card.getCardNumber(),
+                        card.getEmployee()))
+                .toList();
     }
 
     /**
