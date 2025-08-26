@@ -1,5 +1,6 @@
 package com.example.employee.employee.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.employee.employee.dto.PagedResponse;
 import com.example.employee.employee.exception.ResoureNotFoundException;
+import com.example.employee.employee.model.Employee;
 import com.example.employee.employee.model.Project;
+import com.example.employee.employee.respository.EmployeeRespository;
 import com.example.employee.employee.respository.ProjectRespository;
 
 @CrossOrigin(origins = "http://localhost:3000")
@@ -39,6 +42,8 @@ public class ProjectController {
 
     @Autowired
     private ProjectRespository projectRespository;
+    @Autowired
+    private EmployeeRespository employeeRespository;
 
     /**
      * Get list Project
@@ -54,7 +59,7 @@ public class ProjectController {
      */
     @PostMapping("/projects")
     @Transactional
-    public Project createEmployee(@RequestBody Project project) {
+    public Project createProject(@RequestBody Project project) {
         return projectRespository.save(project);
     }
 
@@ -81,10 +86,80 @@ public class ProjectController {
         project.setName(projectDetails.getName());
         project.setDescriptions(projectDetails.getDescriptions());
         project.setEmployees(projectDetails.getEmployees());
-        project.setEmployeeIds(projectDetails.getEmployeeIds());
         Project projectUpdated = projectRespository.save(project);
-        //todo: Check table employee to update project 
+        // todo: Check table employee to update project
         return ResponseEntity.ok(projectUpdated);
+    }
+
+    // @PutMapping("/project/add-employees/{projectId}")
+    // @Transactional
+    // public ResponseEntity<Project> addEmployee(
+    //         @PathVariable Long projectId,
+    //         @RequestBody List<Employee> employees) {
+
+    //     Project project = projectRespository.findById(projectId)
+    //             .orElseThrow(() -> new ResoureNotFoundException("Not found projectId id=" + projectId));
+
+    //     for (Employee e : employees) {
+    //         boolean projectExists = e.getProjects().stream()
+    //                 .anyMatch(p -> p.getId() == project.getId());
+    //         if (!projectExists) {
+    //             e.getProjects().add(project);
+    //         }
+
+    //         boolean employeeExists = project.getEmployees().stream()
+    //                 .anyMatch(emp -> emp.getId() == e.getId());
+    //         if (!employeeExists) {
+    //             project.getEmployees().add(e);
+    //         }
+    //     }
+
+    //     employeeRespository.saveAll(employees);
+
+    //     return ResponseEntity.ok(project);
+    // }
+
+     @PutMapping("/project/add-employees/{projectId}")
+    @Transactional
+    public ResponseEntity<Project> addEmployee(
+            @PathVariable Long projectId,
+            @RequestBody List<Employee> employees) {
+
+        Project project = projectRespository.findById(projectId)
+                .orElseThrow(() -> new ResoureNotFoundException("Not found projectId id=" + projectId));
+
+        List<Employee> savedEmployees = new ArrayList<>();
+
+        for (Employee e : employees) {
+            Employee existing = employeeRespository.findById(e.getId()).orElse(null);
+
+            if (existing != null) {
+                existing.setFirstName(e.getFirstName());
+                existing.setLastName(e.getLastName());
+                existing.setEmailId(e.getEmailId());
+            }
+
+            Employee target = existing != null ? existing : e;
+
+            // Thêm project cho employee nếu chưa có
+            if (target.getProjects().stream().noneMatch(p -> p.getId() == project.getId())) {
+                target.getProjects().add(project);
+            }
+
+            // Lưu employee
+            target = employeeRespository.save(target);
+            savedEmployees.add(target);
+
+            // Thêm employee vào project nếu chưa có
+            final Long targetId = e.getId();
+            if (project.getEmployees().stream().noneMatch(emp -> emp.getId() == targetId)) {
+                project.getEmployees().add(target);
+            }
+        }
+
+        projectRespository.save(project);
+
+        return ResponseEntity.ok(project);
     }
 
     /**
@@ -100,7 +175,7 @@ public class ProjectController {
 
         if (prOptional.isPresent()) {
             projectRespository.delete(prOptional.get());
-            //todo: Check table employee to delete project 
+            // todo: Check table employee to delete project
             result.put("Deleted", true);
         } else {
             result.put("Deleted", false);

@@ -5,7 +5,11 @@ import java.util.List;
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+// @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @Entity
 @Table(name = "employees")
 @NamedQueries({
@@ -32,6 +36,7 @@ public class Employee {
 	@JoinColumn(name = "card_id") // Foreign key in employees
 	private EmployeeCard card;
 
+	@JsonIgnoreProperties("employees")
 	@ManyToMany
 	@JoinTable(name = "employee_project", // table intermediary
 			joinColumns = @JoinColumn(name = "employee_id"), // Foreign key to table Employee

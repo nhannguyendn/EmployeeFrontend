@@ -117,7 +117,7 @@ public class EmployeeController {
 
         if (employeeOpt.isPresent()) {
             employeeRespository.delete(employeeOpt.get());
-            // todo: Check table project, team, card to delete employee
+            // Auto table project, team, card to delete employee
             result.put("Deleted", true);
         } else {
             result.put("Deleted", false);

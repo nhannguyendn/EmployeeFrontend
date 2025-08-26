@@ -12,7 +12,11 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Column;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+// @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @Entity
 @Table(name = "projects")
 public class Project {
@@ -24,23 +28,19 @@ public class Project {
 
     private String descriptions;
 
+    @JsonIgnoreProperties("projects")
     @ManyToMany(mappedBy = "projects")
-    private List<Employee> employees; // Demo <-choose-> employeeIds
-
-    @Column(name = "employee_ids", columnDefinition = "json")
-    @Convert(converter = ListToJsonConverter.class)
-    private List<Long> employeeIds; // Demo
+    private List<Employee> employees; 
 
     public Project() {
 
     }
 
-    public Project(String name, String descriptions, List<Employee> employees, List<Long> employeeIds) {
+    public Project(String name, String descriptions, List<Employee> employees) {
         super();
         this.name = name;
         this.descriptions = descriptions;
         this.employees = employees;
-        this.employeeIds = employeeIds;
     }
 
     public long getId() {
@@ -73,13 +73,6 @@ public class Project {
 
     public List<Employee> getEmployees() {
         return employees;
-    }
 
-    public void setEmployeeIds(List<Long> employeeIds) {
-        this.employeeIds = employeeIds;
-    }
-
-    public List<Long> getEmployeeIds() {
-        return employeeIds;
     }
 }

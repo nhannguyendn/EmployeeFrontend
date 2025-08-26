@@ -18,7 +18,7 @@ public class Team {
     private String descriptions;
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "team")
     private List<Employee> employees;
 
     public Team() {
