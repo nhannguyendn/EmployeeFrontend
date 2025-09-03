@@ -8,10 +8,6 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -26,10 +22,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.employee.employee.dto.EmployeeCardDTO;
-import com.example.employee.employee.dto.PagedResponse;
-import com.example.employee.employee.exception.ResoureNotFoundException;
 import com.example.employee.employee.model.EmployeeCard;
-import com.example.employee.employee.respository.CardRespository;
+import com.example.employee.employee.repository.CardRepository;
+import com.example.employee.exception.ResoureNotFoundException;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -39,7 +34,7 @@ public class CardController {
     private static final Logger logger = LoggerFactory.getLogger(CardController.class);
 
     @Autowired
-    private CardRespository cardRespository;
+    private CardRepository cardRepository;
 
     /**
      * Get list Cards
@@ -47,7 +42,7 @@ public class CardController {
     @GetMapping("/cards")
     public List<EmployeeCardDTO> getAllCard() {
         logger.info("getAllCard");
-        return cardRespository.findAll()
+        return cardRepository.findAll()
                 .stream()
                 .map(card -> new EmployeeCardDTO(card.getId(),
                         card.getCardNumber(),
@@ -59,24 +54,24 @@ public class CardController {
      * Create EmployeeCard
      */
     @PostMapping("/cards")
-    @Transactional
+    @Transactional("employeeTransactionManager")
     public EmployeeCard createEmployeeCard(@RequestBody EmployeeCard employeeCard) {
-        return cardRespository.save(employeeCard);
+        return cardRepository.save(employeeCard);
     }
 
     /**
      * Update employee on card
      */
     @PutMapping("/cards/{cardId}")
-    @Transactional
+    @Transactional("employeeTransactionManager")
     public ResponseEntity<EmployeeCard> updateEmployeeCards(@PathVariable Long cardId,
             @RequestBody EmployeeCard employeeCardDetails) {
-        EmployeeCard employeeCard = cardRespository.findById(cardId)
+        EmployeeCard employeeCard = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResoureNotFoundException("Not found cardId id=" + cardId));
 
         employeeCard.setCardNumber(employeeCardDetails.getCardNumber());
         employeeCard.setEmployee(employeeCardDetails.getEmployee());
-        EmployeeCard employeeCardUpdated = cardRespository.save(employeeCard);
+        EmployeeCard employeeCardUpdated = cardRepository.save(employeeCard);
         return ResponseEntity.ok(employeeCardUpdated);
     }
 
@@ -85,14 +80,14 @@ public class CardController {
      */
 
     @DeleteMapping("/cards/{cardId}")
-    @Transactional
+    @Transactional("employeeTransactionManager")
     public ResponseEntity<Map<String, Boolean>> deleteCard(@PathVariable Long cardId) {
         Map<String, Boolean> result = new HashMap<>();
 
-        Optional<EmployeeCard> prOptional = cardRespository.findById(cardId);
+        Optional<EmployeeCard> prOptional = cardRepository.findById(cardId);
 
         if (prOptional.isPresent()) {
-            cardRespository.delete(prOptional.get());
+            cardRepository.delete(prOptional.get());
             result.put("Deleted", true);
         } else {
             result.put("Deleted", false);
@@ -105,7 +100,7 @@ public class CardController {
      */
     @GetMapping("/cards/search-number")
     public ResponseEntity<List<EmployeeCard>> searchEmployee(@RequestParam("cardNumber") String cardNumber) {
-        List<EmployeeCard> employeeCards = cardRespository.findByCardNumberContainingIgnoreCase(cardNumber);
+        List<EmployeeCard> employeeCards = cardRepository.findByCardNumberContainingIgnoreCase(cardNumber);
         return ResponseEntity.ok(employeeCards);
     }
 

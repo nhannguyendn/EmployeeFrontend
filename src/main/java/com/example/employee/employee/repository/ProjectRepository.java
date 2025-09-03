@@ -1,4 +1,4 @@
-package com.example.employee.employee.respository;
+package com.example.employee.employee.repository;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import com.example.employee.employee.model.Project;
 
 @Repository
-public interface ProjectRespository extends JpaRepository<Project, Long> {
+public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     List<Project> findByNameContainingIgnoreCase(String emailId);
 

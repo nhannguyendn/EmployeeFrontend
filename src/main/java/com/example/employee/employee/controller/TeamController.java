@@ -26,11 +26,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.employee.employee.dto.PagedResponse;
-import com.example.employee.employee.exception.ResoureNotFoundException;
 import com.example.employee.employee.model.Employee;
 import com.example.employee.employee.model.Team;
-import com.example.employee.employee.respository.EmployeeRespository;
-import com.example.employee.employee.respository.TeamRespository;
+import com.example.employee.employee.repository.EmployeeRepository;
+import com.example.employee.employee.repository.TeamRepository;
+import com.example.employee.exception.ResoureNotFoundException;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -40,9 +40,9 @@ public class TeamController {
     private static final Logger logger = LoggerFactory.getLogger(TeamController.class);
 
     @Autowired
-    private TeamRespository teamRespository;
+    private TeamRepository teamRepository;
     @Autowired
-    private EmployeeRespository employeeRepository;
+    private EmployeeRepository employeeRepository;
 
     /**
      * Get list Team
@@ -50,25 +50,25 @@ public class TeamController {
     @GetMapping("/teams")
     public List<Team> getAllTeam() {
         logger.info("getAllTeam");
-        return teamRespository.findAll();
+        return teamRepository.findAll();
     }
 
     /**
      * Create Team
      */
     @PostMapping("/teams")
-    @Transactional
+    @Transactional("employeeTransactionManager")
     public Team createTeam(@RequestBody Team team) {
-        return teamRespository.save(team);
+        return teamRepository.save(team);
     }
 
     /**
      * Get team by id
      */
     @GetMapping("/teams/{teamId}")
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "employeeTransactionManager", readOnly = true)
     public ResponseEntity<Team> getTeamById(@PathVariable Long teamId) {
-        return teamRespository.findById(teamId).map(team -> ResponseEntity.ok(team))
+        return teamRepository.findById(teamId).map(team -> ResponseEntity.ok(team))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -76,20 +76,20 @@ public class TeamController {
      * Update team with id
      */
     @PutMapping("/teams/add-employees/{teamId}")
-    @Transactional
+    @Transactional("employeeTransactionManager")
     public ResponseEntity<Team> addEmployee(@PathVariable Long teamId,
             @RequestBody List<Employee> employees) {
-        Team team = teamRespository.findById(teamId)
+        Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new ResoureNotFoundException("Not found team id=" + teamId));
 
         for (Employee e : employees) {
-            e.setTeam(team); 
+            e.setTeam(team);
         }
 
         employeeRepository.saveAll(employees);
 
         team.getEmployees().addAll(employees);
-        teamRespository.save(team);
+        teamRepository.save(team);
 
         return ResponseEntity.ok(team);
     }
@@ -98,16 +98,16 @@ public class TeamController {
      * Update team with id
      */
     @PutMapping("/teams/{teamId}")
-    @Transactional
+    @Transactional("employeeTransactionManager")
     public ResponseEntity<Team> updateTeams(@PathVariable Long teamId,
             @RequestBody Team teamDetails) {
-        Team team = teamRespository.findById(teamId)
+        Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new ResoureNotFoundException("Not found team id=" + teamId));
 
         team.setName(teamDetails.getName());
         team.setDescriptions(teamDetails.getDescriptions());
         team.setEmployees(teamDetails.getEmployees());
-        Team teamUpdated = teamRespository.save(team);
+        Team teamUpdated = teamRepository.save(team);
         // todo: Check table employee to update team
         return ResponseEntity.ok(teamUpdated);
     }
@@ -117,14 +117,14 @@ public class TeamController {
      */
 
     @DeleteMapping("/teams/{teamId}")
-    @Transactional
+    @Transactional("employeeTransactionManager")
     public ResponseEntity<Map<String, Boolean>> deleteTeam(@PathVariable Long teamId) {
         Map<String, Boolean> result = new HashMap<>();
 
-        Optional<Team> prOptional = teamRespository.findById(teamId);
+        Optional<Team> prOptional = teamRepository.findById(teamId);
 
         if (prOptional.isPresent()) {
-            teamRespository.delete(prOptional.get());
+            teamRepository.delete(prOptional.get());
             // todo: Check table employee to delete team
             result.put("Deleted", true);
         } else {
@@ -138,7 +138,7 @@ public class TeamController {
      */
     @GetMapping("/teams/search-name")
     public ResponseEntity<List<Team>> searchNameTeam(@RequestParam("name") String name) {
-        List<Team> teams = teamRespository.findByNameContainingIgnoreCase(name);
+        List<Team> teams = teamRepository.findByNameContainingIgnoreCase(name);
         return ResponseEntity.ok(teams);
     }
 
@@ -147,7 +147,7 @@ public class TeamController {
      */
     @GetMapping("/team/keywork")
     public ResponseEntity<List<Team>> searchKeywordTeam(@RequestParam("keyword") String keyword) {
-        List<Team> teams = teamRespository.searchTeams(keyword);
+        List<Team> teams = teamRepository.searchTeams(keyword);
         return ResponseEntity.ok(teams);
     }
 
@@ -170,12 +170,12 @@ public class TeamController {
                         : Sort.by(sortBy).descending());
 
         // public ResponseEntity<Page<Team>> searchByKeywordPage(
-        Page<Team> teams = teamRespository.searchByKeywordPageWithMetadata(keyword, pageable);
+        Page<Team> teams = teamRepository.searchByKeywordPageWithMetadata(keyword, pageable);
         // return ResponseEntity.ok(teams);
         // custom response
         return ResponseEntity.ok(PagedResponse.fromPage(teams));
 
-        // List<Team> teams = teamRespository.searchByKeywordPage(keyword,
+        // List<Team> teams = teamRepository.searchByKeywordPage(keyword,
         // pageable);
         // return ResponseEntity.ok(teams);
     }

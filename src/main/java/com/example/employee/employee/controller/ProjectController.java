@@ -27,11 +27,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.employee.employee.dto.PagedResponse;
-import com.example.employee.employee.exception.ResoureNotFoundException;
 import com.example.employee.employee.model.Employee;
 import com.example.employee.employee.model.Project;
-import com.example.employee.employee.respository.EmployeeRespository;
-import com.example.employee.employee.respository.ProjectRespository;
+import com.example.employee.employee.repository.EmployeeRepository;
+import com.example.employee.employee.repository.ProjectRepository;
+import com.example.employee.exception.ResoureNotFoundException;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -41,9 +41,9 @@ public class ProjectController {
     private static final Logger logger = LoggerFactory.getLogger(ProjectController.class);
 
     @Autowired
-    private ProjectRespository projectRespository;
+    private ProjectRepository projectRepository;
     @Autowired
-    private EmployeeRespository employeeRespository;
+    private EmployeeRepository employeeRepository;
 
     /**
      * Get list Project
@@ -51,25 +51,25 @@ public class ProjectController {
     @GetMapping("/projects")
     public List<Project> getAllProject() {
         logger.info("getAllProject");
-        return projectRespository.findAll();
+        return projectRepository.findAll();
     }
 
     /**
      * Create Project
      */
     @PostMapping("/projects")
-    @Transactional
+    @Transactional("employeeTransactionManager")
     public Project createProject(@RequestBody Project project) {
-        return projectRespository.save(project);
+        return projectRepository.save(project);
     }
 
     /**
      * Get Project by id
      */
     @GetMapping("/projects/{projectId}")
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "employeeTransactionManager", readOnly = true)
     public ResponseEntity<Project> getProjectById(@PathVariable Long projectId) {
-        return projectRespository.findById(projectId).map(project -> ResponseEntity.ok(project))
+        return projectRepository.findById(projectId).map(project -> ResponseEntity.ok(project))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -77,27 +77,27 @@ public class ProjectController {
      * Update Project with id
      */
     @PutMapping("/projects/{projectId}")
-    @Transactional
+    @Transactional("employeeTransactionManager")
     public ResponseEntity<Project> updateProjects(@PathVariable Long projectId,
             @RequestBody Project projectDetails) {
-        Project project = projectRespository.findById(projectId)
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResoureNotFoundException("Not found project id=" + projectId));
 
         project.setName(projectDetails.getName());
         project.setDescriptions(projectDetails.getDescriptions());
         project.setEmployees(projectDetails.getEmployees());
-        Project projectUpdated = projectRespository.save(project);
+        Project projectUpdated = projectRepository.save(project);
         // todo: Check table employee to update project
         return ResponseEntity.ok(projectUpdated);
     }
 
     // @PutMapping("/project/add-employees/{projectId}")
-    // @Transactional
+    // @Transactional("employeeTransactionManager")
     // public ResponseEntity<Project> addEmployee(
     //         @PathVariable Long projectId,
     //         @RequestBody List<Employee> employees) {
 
-    //     Project project = projectRespository.findById(projectId)
+    //     Project project = projectRepository.findById(projectId)
     //             .orElseThrow(() -> new ResoureNotFoundException("Not found projectId id=" + projectId));
 
     //     for (Employee e : employees) {
@@ -114,24 +114,24 @@ public class ProjectController {
     //         }
     //     }
 
-    //     employeeRespository.saveAll(employees);
+    //     employeeRepository.saveAll(employees);
 
     //     return ResponseEntity.ok(project);
     // }
 
      @PutMapping("/project/add-employees/{projectId}")
-    @Transactional
+    @Transactional("employeeTransactionManager")
     public ResponseEntity<Project> addEmployee(
             @PathVariable Long projectId,
             @RequestBody List<Employee> employees) {
 
-        Project project = projectRespository.findById(projectId)
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResoureNotFoundException("Not found projectId id=" + projectId));
 
         List<Employee> savedEmployees = new ArrayList<>();
 
         for (Employee e : employees) {
-            Employee existing = employeeRespository.findById(e.getId()).orElse(null);
+            Employee existing = employeeRepository.findById(e.getId()).orElse(null);
 
             if (existing != null) {
                 existing.setFirstName(e.getFirstName());
@@ -147,7 +147,7 @@ public class ProjectController {
             }
 
             // Lưu employee
-            target = employeeRespository.save(target);
+            target = employeeRepository.save(target);
             savedEmployees.add(target);
 
             // Thêm employee vào project nếu chưa có
@@ -157,7 +157,7 @@ public class ProjectController {
             }
         }
 
-        projectRespository.save(project);
+        projectRepository.save(project);
 
         return ResponseEntity.ok(project);
     }
@@ -167,14 +167,14 @@ public class ProjectController {
      */
 
     @DeleteMapping("/projects/{projectId}")
-    @Transactional
+    @Transactional("employeeTransactionManager")
     public ResponseEntity<Map<String, Boolean>> deleteProject(@PathVariable Long projectId) {
         Map<String, Boolean> result = new HashMap<>();
 
-        Optional<Project> prOptional = projectRespository.findById(projectId);
+        Optional<Project> prOptional = projectRepository.findById(projectId);
 
         if (prOptional.isPresent()) {
-            projectRespository.delete(prOptional.get());
+            projectRepository.delete(prOptional.get());
             // todo: Check table employee to delete project
             result.put("Deleted", true);
         } else {
@@ -188,7 +188,7 @@ public class ProjectController {
      */
     @GetMapping("/projects/search-name")
     public ResponseEntity<List<Project>> searchNameProject(@RequestParam("name") String name) {
-        List<Project> projects = projectRespository.findByNameContainingIgnoreCase(name);
+        List<Project> projects = projectRepository.findByNameContainingIgnoreCase(name);
         return ResponseEntity.ok(projects);
     }
 
@@ -197,7 +197,7 @@ public class ProjectController {
      */
     @GetMapping("/project/keywork")
     public ResponseEntity<List<Project>> searchKeywordEmployee(@RequestParam("keyword") String keyword) {
-        List<Project> projects = projectRespository.searchProjects(keyword);
+        List<Project> projects = projectRepository.searchProjects(keyword);
         return ResponseEntity.ok(projects);
     }
 
@@ -220,12 +220,12 @@ public class ProjectController {
                         : Sort.by(sortBy).descending());
 
         // public ResponseEntity<Page<Project>> searchByKeywordPage(
-        Page<Project> projects = projectRespository.searchByKeywordPageWithMetadata(keyword, pageable);
+        Page<Project> projects = projectRepository.searchByKeywordPageWithMetadata(keyword, pageable);
         // return ResponseEntity.ok(projects);
         // custom response
         return ResponseEntity.ok(PagedResponse.fromPage(projects));
 
-        // List<Project> projects = projectRespository.searchByKeywordPage(keyword,
+        // List<Project> projects = projectRepository.searchByKeywordPage(keyword,
         // pageable);
         // return ResponseEntity.ok(projects);
     }

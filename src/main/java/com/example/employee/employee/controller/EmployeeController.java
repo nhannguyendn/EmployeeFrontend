@@ -25,13 +25,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.employee.employee.dto.EmployeeDTO;
 import com.example.employee.employee.dto.PagedResponse;
-import com.example.employee.employee.exception.ResoureNotFoundException;
 import com.example.employee.employee.model.Employee;
 import com.example.employee.employee.model.EmployeeCard;
-import com.example.employee.employee.respository.CardRespository;
-import com.example.employee.employee.respository.EmployeeRespository;
+import com.example.employee.employee.repository.CardRepository;
+import com.example.employee.employee.repository.EmployeeRepository;
+import com.example.employee.exception.ResoureNotFoundException;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -41,9 +40,9 @@ public class EmployeeController {
     private static final Logger logger = LoggerFactory.getLogger(EmployeeController.class);
 
     @Autowired
-    private EmployeeRespository employeeRespository;
+    private EmployeeRepository employeeRepository;
     @Autowired
-    private CardRespository cardRespository;
+    private CardRepository cardRepository;
 
     /**
      * get employees
@@ -53,14 +52,14 @@ public class EmployeeController {
     @GetMapping("/employees")
     public List<Employee> getAllEmployees() {
         logger.info("getAllEmployees");
-        return employeeRespository.findAll();
+        return employeeRepository.findAll();
     }
 
     /**
      * Create employee
      */
     @PostMapping("/employees")
-    @Transactional
+    @Transactional("employeeTransactionManager")
     public Employee createEmployee(@RequestBody Employee employee) {
         String newCardNumber = generateNextCardNumber();
         EmployeeCard card = new EmployeeCard();
@@ -69,16 +68,16 @@ public class EmployeeController {
 
         employee.setCard(card);
 
-        return employeeRespository.save(employee);
+        return employeeRepository.save(employee);
     }
 
     /**
      * Get employee by id
      */
     @GetMapping("/employees/{employeeId}")
-    @Transactional(readOnly = true)
+    @Transactional(transactionManager = "employeeTransactionManager", readOnly = true)
     public ResponseEntity<Employee> getEmployeesById(@PathVariable Long employeeId) {
-        return employeeRespository.findById(employeeId).map(employee -> ResponseEntity.ok(employee))
+        return employeeRepository.findById(employeeId).map(employee -> ResponseEntity.ok(employee))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -86,16 +85,16 @@ public class EmployeeController {
      * Update employee with id
      */
     @PutMapping("/employees/{employeeId}")
-    @Transactional
+    @Transactional("employeeTransactionManager")
     public ResponseEntity<Employee> updateEmployees(@PathVariable Long employeeId,
             @RequestBody Employee employeeDetails) {
-        Employee employee = employeeRespository.findById(employeeId)
+        Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResoureNotFoundException("Not found employee id=" + employeeId));
 
         employee.setEmailId(employeeDetails.getEmailId());
         employee.setFirstName(employeeDetails.getFirstName());
         employee.setLastName(employeeDetails.getLastName());
-        Employee employeeUpdated = employeeRespository.save(employee);
+        Employee employeeUpdated = employeeRepository.save(employee);
         // todo: Check table project, team, card to update employee
         return ResponseEntity.ok(employeeUpdated);
     }
@@ -105,18 +104,18 @@ public class EmployeeController {
      */
 
     @DeleteMapping("/employees/{employeeId}")
-    @Transactional
+    @Transactional("employeeTransactionManager")
     public ResponseEntity<Map<String, Boolean>> deleteEmployee(@PathVariable Long employeeId) {
         Map<String, Boolean> result = new HashMap<>();
 
-        Optional<Employee> employeeOpt = employeeRespository.findById(employeeId);
+        Optional<Employee> employeeOpt = employeeRepository.findById(employeeId);
 
-        // Employee employee = employeeRespository.findById(employeeId)
+        // Employee employee = employeeRepository.findById(employeeId)
         // .orElseThrow(() -> new ResoureNotFoundException("Not found employee id =" +
         // employeeId));
 
         if (employeeOpt.isPresent()) {
-            employeeRespository.delete(employeeOpt.get());
+            employeeRepository.delete(employeeOpt.get());
             // Auto table project, team, card to delete employee
             result.put("Deleted", true);
         } else {
@@ -130,7 +129,7 @@ public class EmployeeController {
      */
     @GetMapping("/employees/search")
     public ResponseEntity<List<Employee>> searchEmployees(@RequestParam("name") String name) {
-        List<Employee> employees = employeeRespository
+        List<Employee> employees = employeeRepository
                 .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(name, name);
         return ResponseEntity.ok(employees);
     }
@@ -140,7 +139,7 @@ public class EmployeeController {
      */
     @GetMapping("/employees/search-email")
     public ResponseEntity<List<Employee>> searchEmailEmployee(@RequestParam("emailId") String email) {
-        List<Employee> employees = employeeRespository.findByEmailIdContainingIgnoreCase(email);
+        List<Employee> employees = employeeRepository.findByEmailIdContainingIgnoreCase(email);
         return ResponseEntity.ok(employees);
     }
 
@@ -149,7 +148,7 @@ public class EmployeeController {
      */
     @GetMapping("/employees/keywork")
     public ResponseEntity<List<Employee>> searchKeywordEmployee(@RequestParam("keyword") String keyword) {
-        List<Employee> employees = employeeRespository.searchEmployees(keyword);
+        List<Employee> employees = employeeRepository.searchEmployees(keyword);
         return ResponseEntity.ok(employees);
     }
 
@@ -172,12 +171,12 @@ public class EmployeeController {
                         : Sort.by(sortBy).descending());
 
         // public ResponseEntity<Page<Employee>> searchByKeywordPage(
-        Page<Employee> employees = employeeRespository.searchByKeywordPageWithMetadata(keyword, pageable);
+        Page<Employee> employees = employeeRepository.searchByKeywordPageWithMetadata(keyword, pageable);
         // return ResponseEntity.ok(employees);
         // custom response
         return ResponseEntity.ok(PagedResponse.fromPage(employees));
 
-        // List<Employee> employees = employeeRespository.searchByKeywordPage(keyword,
+        // List<Employee> employees = employeeRepository.searchByKeywordPage(keyword,
         // pageable);
         // return ResponseEntity.ok(employees);
     }
@@ -187,7 +186,7 @@ public class EmployeeController {
      */
     @GetMapping("/employees/email")
     public ResponseEntity<List<Employee>> findByEmail(@RequestParam("email") String name) {
-        List<Employee> employees = employeeRespository
+        List<Employee> employees = employeeRepository
                 .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(name, name);
         return ResponseEntity.ok(employees);
     }
@@ -197,14 +196,14 @@ public class EmployeeController {
      */
     @GetMapping("/employees/firstName")
     public ResponseEntity<List<Employee>> findByFirstName(@RequestParam("firstName") String name) {
-        List<Employee> employees = employeeRespository
+        List<Employee> employees = employeeRepository
                 .findByFirstName(name);
         return ResponseEntity.ok(employees);
     }
 
     private String generateNextCardNumber() {
         String prefix = "EMP";
-        String maxCard = cardRespository.findMaxCardNumber();
+        String maxCard = cardRepository.findMaxCardNumber();
 
         long next = 1L;
         if (maxCard != null && maxCard.startsWith(prefix)) {

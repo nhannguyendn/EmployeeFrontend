@@ -1,4 +1,4 @@
-package com.example.employee.employee.respository;
+package com.example.employee.employee.repository;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import com.example.employee.employee.model.Team;
 
 @Repository
-public interface TeamRespository extends JpaRepository<Team, Long> {
+public interface TeamRepository extends JpaRepository<Team, Long> {
 
     List<Team> findByNameContainingIgnoreCase(String emailId);
 
