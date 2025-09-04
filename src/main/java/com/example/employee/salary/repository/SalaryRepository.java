@@ -1,5 +1,6 @@
 package com.example.employee.salary.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,4 +12,6 @@ import com.example.employee.salary.model.Salary;
 public interface SalaryRepository extends JpaRepository<Salary, Long> {
 
     Optional<Salary> findByEmployeeId(long employeeId);
+
+    List<Salary> findByEmployeeIdIn(List<Long> employeeIds);
 }

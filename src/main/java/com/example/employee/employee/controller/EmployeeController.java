@@ -1,9 +1,12 @@
 package com.example.employee.employee.controller;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +28,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.employee.attendance.model.Attendance;
+import com.example.employee.attendance.repository.AttendanceRepository;
+import com.example.employee.employee.dto.EmployeeDTO;
 import com.example.employee.employee.dto.PagedResponse;
 import com.example.employee.employee.model.Employee;
 import com.example.employee.employee.model.EmployeeCard;
 import com.example.employee.employee.repository.CardRepository;
 import com.example.employee.employee.repository.EmployeeRepository;
 import com.example.employee.exception.ResoureNotFoundException;
+import com.example.employee.salary.model.Salary;
+import com.example.employee.salary.repository.SalaryRepository;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -41,8 +49,15 @@ public class EmployeeController {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+
     @Autowired
     private CardRepository cardRepository;
+
+    @Autowired
+    private SalaryRepository salaryRepository;
+
+    @Autowired
+    private AttendanceRepository attendanceRepository;
 
     /**
      * get employees
@@ -53,6 +68,52 @@ public class EmployeeController {
     public List<Employee> getAllEmployees() {
         logger.info("getAllEmployees");
         return employeeRepository.findAll();
+    }
+
+    @GetMapping("/employee-pages")
+    public ResponseEntity<PagedResponse<EmployeeDTO>> getAllEmployees(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                sortDir.equalsIgnoreCase("asc")
+                        ? Sort.by(sortBy).ascending()
+                        : Sort.by(sortBy).descending());
+
+        Page<Employee> employees = employeeRepository.findAll(pageable);
+        List<Long> employeeIds = employees
+                .stream()
+                .map(Employee::getId)
+                .toList();
+
+        List<Attendance> attendances = attendanceRepository.findByEmployeeIdIn(employeeIds);
+        Map<Long, List<Attendance>> attendanceMap = attendances.stream()
+                .collect(Collectors.groupingBy(Attendance::getEmployeeId));
+
+        List<Salary> salaries = salaryRepository.findByEmployeeIdIn(employeeIds);
+        Map<Long, Salary> salariesMap = salaries.stream()
+                .collect(Collectors.toMap(
+                        Salary::getEmployeeId,
+                        Function.identity(),
+                        (existing, replacement) -> existing));
+
+        Page<EmployeeDTO> dtoPage = employees.map(emp -> {
+            EmployeeDTO dto = EmployeeDTO.fromEntity(emp);
+
+            // salaryRepository.findByEmployeeId(emp.getId())
+            // .ifPresent(salary -> dto.setSalary(salary));
+
+            dto.setAttendances(attendanceMap.getOrDefault(emp.getId(), Collections.emptyList()));
+            dto.setSalary(salariesMap.getOrDefault(emp.getId(), null));
+
+            return dto;
+        });
+
+        return ResponseEntity.ok(PagedResponse.fromPage(dtoPage));
     }
 
     /**

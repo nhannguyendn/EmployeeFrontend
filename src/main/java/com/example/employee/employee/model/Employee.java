@@ -2,7 +2,6 @@ package com.example.employee.employee.model;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 // import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 // import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -58,9 +57,9 @@ public class Employee {
 	)
 	private List<Project> projects;
 
-	@JsonBackReference
-	@ManyToOne
+	@ManyToOne()
 	@JoinColumn(name = "team_id")
+	@JsonIgnoreProperties("employees")
 	private Team team;
 
 	public Employee() {
