@@ -1,6 +1,8 @@
 package com.example.employee.security.service;
 
 import java.util.Date;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.crypto.SecretKey;
 
@@ -19,6 +21,7 @@ public class JwtService {
     private SecretKey key;
     @Value("${jwt.secret}")
     private String secret;
+    public Set<String> blacklistedTokens = ConcurrentHashMap.newKeySet(); // TODO: Redis
 
     @PostConstruct
     public void init() {
@@ -56,5 +59,13 @@ public class JwtService {
                 .getBody()
                 .getExpiration();
         return expiration.before(new Date());
+    }
+
+    public void blacklistToken(String token) {
+        blacklistedTokens.add(token);
+    }
+
+    public void cleanupExpiredTokens() {
+        blacklistedTokens.removeIf(this::isTokenExpired);
     }
 }
