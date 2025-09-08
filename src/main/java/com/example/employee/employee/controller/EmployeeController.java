@@ -33,16 +33,18 @@ import com.example.employee.attendance.repository.AttendanceRepository;
 import com.example.employee.employee.dto.EmployeeDTO;
 import com.example.employee.employee.dto.PagedResponse;
 import com.example.employee.employee.model.Employee;
-import com.example.employee.employee.model.EmployeeCard;
-import com.example.employee.employee.repository.CardRepository;
 import com.example.employee.employee.repository.EmployeeRepository;
 import com.example.employee.exception.ResoureNotFoundException;
 import com.example.employee.salary.model.Salary;
 import com.example.employee.salary.repository.SalaryRepository;
+import com.example.employee.security.service.EmployeeService;
+
+import lombok.RequiredArgsConstructor;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/v1")
+@RequiredArgsConstructor
 public class EmployeeController {
 
     private static final Logger logger = LoggerFactory.getLogger(EmployeeController.class);
@@ -51,13 +53,12 @@ public class EmployeeController {
     private EmployeeRepository employeeRepository;
 
     @Autowired
-    private CardRepository cardRepository;
-
-    @Autowired
     private SalaryRepository salaryRepository;
 
     @Autowired
     private AttendanceRepository attendanceRepository;
+
+    private final EmployeeService employeeService;
 
     /**
      * get employees
@@ -122,14 +123,7 @@ public class EmployeeController {
     @PostMapping("/employees")
     @Transactional("employeeTransactionManager")
     public Employee createEmployee(@RequestBody Employee employee) {
-        String newCardNumber = generateNextCardNumber();
-        EmployeeCard card = new EmployeeCard();
-        card.setCardNumber(newCardNumber);
-        // card.setEmployee(employee);
-
-        employee.setCard(card);
-
-        return employeeRepository.save(employee);
+        return employeeService.createNewEmployee(employee);
     }
 
     /**
@@ -260,21 +254,6 @@ public class EmployeeController {
         List<Employee> employees = employeeRepository
                 .findByFirstName(name);
         return ResponseEntity.ok(employees);
-    }
-
-    private String generateNextCardNumber() {
-        String prefix = "EMP";
-        String maxCard = cardRepository.findMaxCardNumber();
-
-        long next = 1L;
-        if (maxCard != null && maxCard.startsWith(prefix)) {
-            next = Long.parseLong(maxCard.substring(prefix.length())) + 1;
-        }
-
-        int minDigits = 4;
-        int digits = Math.max(minDigits, String.valueOf(next).length());
-
-        return prefix + String.format("%0" + digits + "d", next);
     }
 
 }

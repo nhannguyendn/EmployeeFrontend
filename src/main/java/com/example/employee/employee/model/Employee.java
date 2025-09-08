@@ -10,6 +10,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -21,6 +23,10 @@ import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 // @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @Entity
@@ -29,6 +35,10 @@ import jakarta.persistence.Table;
 		@NamedQuery(name = "Employee.findByEmail", query = "SELECT e FROM Employee e WHERE LOWER(e.emailId) = LOWER(:email)"),
 		@NamedQuery(name = "Employee.findByFirstName", query = "SELECT e FROM Employee e WHERE LOWER(e.firstName) LIKE LOWER(CONCAT('%', :firstName, '%'))")
 })
+@Data
+@Builder            
+@NoArgsConstructor
+@AllArgsConstructor
 public class Employee {
 
 	@Id
@@ -43,6 +53,9 @@ public class Employee {
 
 	@Column(name = "email_id")
 	private String emailId;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
 	@JsonManagedReference
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
@@ -62,15 +75,12 @@ public class Employee {
 	@JsonIgnoreProperties("employees")
 	private Team team;
 
-	public Employee() {
-
-	}
-
-	public Employee(String firstName, String lastName, String emailId) {
+	public Employee(String firstName, String lastName, String emailId, Role role) {
 		super();
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.emailId = emailId;
+		this.role = role;
 	}
 
 	public long getId() {
@@ -127,6 +137,14 @@ public class Employee {
 
 	public List<Project> getProjects() {
 		return projects;
+	}
+
+	public void setRole(Role role) {
+		this.role = role;
+	}
+
+	public Role getRole() {
+		return role;
 	}
 
 }

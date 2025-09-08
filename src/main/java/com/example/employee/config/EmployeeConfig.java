@@ -1,5 +1,8 @@
 package com.example.employee.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,14 +45,19 @@ public class EmployeeConfig {
     // return DataSourceBuilder.create().build();
     // }
 
-    @Primary
     @Bean(name = "employeeEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean employeeEntityManagerFactory(
             EntityManagerFactoryBuilder builder) {
+
+        Map<String, Object> props = new HashMap<>();
+        props.put("hibernate.hbm2ddl.auto", "update");
+        props.put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
+
         return builder
                 .dataSource(employeeDataSource())
                 .packages("com.example.employee.employee.model")
                 .persistenceUnit("employee")
+                .properties(props)
                 .build();
     }
 
