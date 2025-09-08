@@ -62,23 +62,50 @@ public class AuthService {
         } catch (AuthenticationException e) {
             return LoginResponse.builder()
                     .status(false)
-                    .token(null)
+                    .accessToken(null)
                     .build();
         }
-        
+
         var user = userRepository.findByEmail(request.getEmail());
         if (user == null) {
             return LoginResponse.builder()
                     .status(false)
-                    .token(null)
+                    .accessToken(null)
                     .build();
         }
 
         String token = jwtService.generateToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
         return LoginResponse.builder()
                 .status(token != null)
-                .token(token)
+                .accessToken(token)
+                .refreshToken(refreshToken)
                 .build();
     }
 
+    public LoginResponse refreshToken(LoginRequest request) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        } catch (AuthenticationException e) {
+            return LoginResponse.builder()
+                    .status(false)
+                    .build();
+        }
+
+        var user = userRepository.findByEmail(request.getEmail());
+        if (user == null) {
+            return LoginResponse.builder()
+                    .status(false)
+                    .build();
+        }
+
+        String token = jwtService.generateToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
+        return LoginResponse.builder()
+                .status(token != null)
+                .accessToken(token)
+                .refreshToken(refreshToken)
+                .build();
+    }
 }

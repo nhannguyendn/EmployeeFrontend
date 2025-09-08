@@ -17,6 +17,8 @@ import com.example.employee.employee.dto.LoginRequest;
 import com.example.employee.employee.dto.LoginResponse;
 import com.example.employee.employee.dto.RegisterRequest;
 import com.example.employee.employee.model.Employee;
+import com.example.employee.employee.model.User;
+import com.example.employee.employee.repository.UserRepository;
 import com.example.employee.security.service.AuthService;
 import com.example.employee.security.service.CustomUserDetailsService;
 import com.example.employee.security.service.JwtService;
@@ -33,6 +35,7 @@ public class AuthController {
     private final AuthService authService;
     private final JwtService jwtService;
     private final CustomUserDetailsService customUserDetailsService;
+    private final UserRepository userRepository;
 
     @PostMapping("/register")
     @Transactional("employeeTransactionManager")
@@ -87,6 +90,30 @@ public class AuthController {
             response.put("message", "Invalid token");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<Map<String, Object>> refreshToken(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get("refreshToken");
+
+        Map<String, Object> response = new HashMap<>();
+        if (refreshToken == null || !jwtService.validateRefreshToken(refreshToken)) {
+            response.put("status", false);
+            response.put("message", "Invalid or expired refresh token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        String username = jwtService.extractUsername(refreshToken);
+        User user = userRepository.findByEmail(username);
+
+        String newAccessToken = jwtService.generateToken(user);
+        String newRefreshToken = jwtService.generateRefreshToken(user); 
+        //jwtService.blacklistToken(token); block old access token if need
+
+        response.put("status", true);
+        response.put("accessToken", newAccessToken);
+        response.put("refreshToken", newRefreshToken);
+        return ResponseEntity.ok(response);
     }
 
 }
