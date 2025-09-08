@@ -1,5 +1,6 @@
 package com.example.employee.security.filter;
 
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -78,8 +79,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private void unauthorizedResponse(HttpServletResponse response, String message) throws java.io.IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        response.getWriter().write("{\"error\":\"" + message + "\"}");
+        // response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        // response.setContentType("application/json");
+        // response.getWriter().write("{\"error\":\"" + message + "\"}");
+         throw new InsufficientAuthenticationException(message);
     }
 }
