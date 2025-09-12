@@ -22,6 +22,7 @@ import com.example.employee.employee.repository.UserRepository;
 import com.example.employee.security.service.AuthService;
 import com.example.employee.security.service.CustomUserDetailsService;
 import com.example.employee.security.service.JwtService;
+import com.example.employee.utils.Constant;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -55,8 +56,8 @@ public class AuthController {
         Map<String, Object> response = new HashMap<>();
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.put("status", false);
-            response.put("message", "No token provided");
+            response.put(Constant.KEY_RESULT, false);
+            response.put(Constant.KEY_MESSAGE, "No token provided");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
@@ -65,41 +66,41 @@ public class AuthController {
         try {
 
             if (jwtService.blacklistedTokens.contains(token)) {
-                response.put("status", false);
-                response.put("message", "Token already logged out");
+                response.put(Constant.KEY_STATUS, false);
+                response.put(Constant.KEY_MESSAGE, "Token already logged out");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
             String username = jwtService.extractUsername(token);
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
             if (!jwtService.validateToken(token, userDetails)) {
-                response.put("status", false);
-                response.put("message", "Invalid or expired token");
+                response.put(Constant.KEY_STATUS, false);
+                response.put(Constant.KEY_MESSAGE, "Invalid or expired token");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
 
             jwtService.blacklistToken(token);
 
-            response.put("status", true);
-            response.put("message", "Logged out successfully");
+            response.put(Constant.KEY_STATUS, true);
+            response.put(Constant.KEY_MESSAGE, "Logged out successfully");
             response.put("token", null);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            response.put("status", false);
-            response.put("message", "Invalid token");
+            response.put(Constant.KEY_STATUS, false);
+            response.put(Constant.KEY_MESSAGE, "Invalid token");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
     }
 
     @PostMapping("/refresh-token")
     public ResponseEntity<Map<String, Object>> refreshToken(@RequestBody Map<String, String> request) {
-        String refreshToken = request.get("refreshToken");
+        String refreshToken = request.get(Constant.KEY_REFRESH_TOKEN);
 
         Map<String, Object> response = new HashMap<>();
         if (refreshToken == null || !jwtService.validateRefreshToken(refreshToken)) {
-            response.put("status", false);
-            response.put("message", "Invalid or expired refresh token");
+            response.put(Constant.KEY_STATUS, false);
+            response.put(Constant.KEY_MESSAGE, "Invalid or expired refresh token");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
@@ -110,9 +111,9 @@ public class AuthController {
         String newRefreshToken = jwtService.generateRefreshToken(user); 
         //jwtService.blacklistToken(token); block old access token if need
 
-        response.put("status", true);
-        response.put("accessToken", newAccessToken);
-        response.put("refreshToken", newRefreshToken);
+        response.put(Constant.KEY_STATUS, true);
+        response.put(Constant.KEY_ACCESS_TOEKN, newAccessToken);
+        response.put(Constant.KEY_REFRESH_TOKEN, newRefreshToken);
         return ResponseEntity.ok(response);
     }
 

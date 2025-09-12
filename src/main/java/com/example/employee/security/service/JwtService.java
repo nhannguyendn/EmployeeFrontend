@@ -22,7 +22,7 @@ public class JwtService {
     private SecretKey key;
     @Value("${jwt.secret}")
     private String secret;
-    public Set<String> blacklistedTokens = ConcurrentHashMap.newKeySet(); // TODO: Redis
+    public final Set<String> blacklistedTokens = ConcurrentHashMap.newKeySet(); // use Redis
 
     @PostConstruct
     public void init() {
