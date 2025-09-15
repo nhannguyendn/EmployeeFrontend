@@ -3,10 +3,15 @@ package com.example.employee.employee.controller;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import com.example.employee.employee.model.LoginType;
+import com.example.employee.security.oauth2.CustomOAuth2User;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.*;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +31,7 @@ import com.example.employee.utils.Constant;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.client.RestTemplate;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -51,7 +57,8 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, Object>> logout(HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> logout(HttpServletRequest request,
+                                                      HttpServletResponse httpServletResponse) {
         String authHeader = request.getHeader("Authorization");
         Map<String, Object> response = new HashMap<>();
 
@@ -80,6 +87,17 @@ public class AuthController {
             }
 
             jwtService.blacklistToken(token);
+            User user = userRepository.findByEmail(username);
+            if (user != null && user.getLoginType() == LoginType.GOOGLE) {
+                //revokeGoogleToken(user.getGoogleAccessToken());
+            }
+
+            // 3. Clear session (Spring Security session + cookie)
+            request.getSession().invalidate();
+            Cookie cookie = new Cookie("JSESSIONID", null);
+            cookie.setMaxAge(0);
+            cookie.setPath("/");
+            httpServletResponse.addCookie(cookie);
 
             response.put(Constant.KEY_STATUS, true);
             response.put(Constant.KEY_MESSAGE, "Logged out successfully");
@@ -92,6 +110,28 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
     }
+
+    private void revokeGoogleToken(String accessToken) {
+        try {
+            String revokeUrl = "https://oauth2.googleapis.com/revoke";
+            RestTemplate restTemplate = new RestTemplate();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            params.add("token", accessToken);
+
+            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(revokeUrl, request, String.class);
+            System.out.println("Google revoke response: " + response.getStatusCode());
+
+        } catch (Exception e) {
+            System.err.println("Failed to revoke Google token: " + e.getMessage());
+        }
+    }
+
 
     @PostMapping("/refresh-token")
     public ResponseEntity<Map<String, Object>> refreshToken(@RequestBody Map<String, String> request) {
@@ -108,7 +148,7 @@ public class AuthController {
         User user = userRepository.findByEmail(username);
 
         String newAccessToken = jwtService.generateToken(user);
-        String newRefreshToken = jwtService.generateRefreshToken(user); 
+        String newRefreshToken = jwtService.generateRefreshToken(user);
         //jwtService.blacklistToken(token); block old access token if need
 
         response.put(Constant.KEY_STATUS, true);

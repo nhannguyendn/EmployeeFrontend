@@ -3,21 +3,21 @@ spring:
     name: employee
 
   datasource:
-   employee:
+    employee:
       url: jdbc:mysql://localhost:3306/employee_db?useSSL=false&serverTimezone=UTC
       username: root
       password:
       driver-class-name: com.mysql.cj.jdbc.Driver
   salary:
-      url: jdbc:mysql://localhost:3306/salary_db?useSSL=false&serverTimezone=UTC
-      username: root
-      password:
-      driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/salary_db?useSSL=false&serverTimezone=UTC
+    username: root
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
   attendance:
-      url: jdbc:mysql://localhost:3306/attendance_db?useSSL=false&serverTimezone=UTC
-      username: root
-      password:
-      driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/attendance_db?useSSL=false&serverTimezone=UTC
+    username: root
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     properties:
@@ -29,6 +29,23 @@ spring:
       open-in-view: false
   jwt:
   secret: your-super-secret-key-at-least-32-chars
+
+  security:
+      oauth2:
+        client:
+          registration:
+            google:
+              client-id: "375227342188-ki3mkm14aed5envimjlukj52bpv7mnf2.apps.googleusercontent.com"
+              client-secret: "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"
+              scope: email,profile
+              redirect-uri: "{baseUrl}/api/v1/auth/login/oauth2/code/{registrationId}"
+              client-name: Google
+          provider:
+            google:
+              authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+              token-uri: https://oauth2.googleapis.com/token
+              user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
+              user-name-attribute: sub
 
 server:
   port: 8888

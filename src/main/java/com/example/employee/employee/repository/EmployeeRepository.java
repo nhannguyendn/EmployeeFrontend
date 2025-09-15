@@ -52,7 +52,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
          * @param email
          * @return
          */
-        List<Employee> findByEmail(@Param("email") String email);
+        Employee findByEmail(@Param("email") String email);
 
         /**
          * @NamedQuery

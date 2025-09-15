@@ -26,7 +26,9 @@ public class User {
 
     private String email;
 
-    private String password; 
+    private String password;
+
+    private LoginType loginType = LoginType.NORMAL;
 
     @Enumerated(EnumType.STRING)
     private Role role;

@@ -1,5 +1,6 @@
 package com.example.employee.security.filter;
 
+import org.springframework.lang.NonNullApi;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,18 +27,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain) throws ServletException, java.io.IOException {
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, java.io.IOException {
 
         String path = request.getRequestURI();
-        if (path.startsWith("/api/v1/auth/")) { // permit endpoints
+        if (path.startsWith("/api/v1/auth/")
+                || path.startsWith("/oauth2/authorization/")
+                || path.startsWith("/login/oauth2/code/")
+                || path.startsWith("/auth/")) { // permit endpoints
             filterChain.doFilter(request, response);
             return;
         }
 
         final String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            unauthorizedResponse(response, "Missing or invalid Authorization header");
+            //unauthorizedResponse(response, "Missing or invalid Authorization header");
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -82,6 +87,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         // response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         // response.setContentType("application/json");
         // response.getWriter().write("{\"error\":\"" + message + "\"}");
-         throw new InsufficientAuthenticationException(message);
+        throw new InsufficientAuthenticationException(message);
     }
 }
