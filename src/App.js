@@ -8,6 +8,7 @@ import CreateEmployeeComponent from './components/CreateEmployeeComponent';
 import UpdateEmployeeComponent from './components/UpdateEmployeeComponent';
 import ViewEmployeeComponent from './components/ViewEmployeeComponent';
 import ViewEmployeeComponentFunction from './components/ViewEmployeeComponentFunction';
+import LoginEmployeeComponent from './components/LoginEmployeeComponent';
 
 function App() {
 
@@ -32,6 +33,7 @@ function App() {
           <div>
             <Routes>
               <Route path="/" element={<ListEmployeeComponent />}></Route>
+              <Route path="/login" element={<LoginEmployeeComponent/>}></Route>
               <Route path="/employees" element={<ListEmployeeComponent />}></Route>
               <Route path="/add-employee/:id" element={<CreateEmployeeComponent />}></Route>
               <Route path="/view-employee/:id" element={<ViewEmployeeComponent />}></Route>
