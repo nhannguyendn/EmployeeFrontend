@@ -7,9 +7,7 @@ class ListEmployeeComponent extends Component {
     constructor(props) {
         super(props);
 
-        this.state = {
-            employees: []
-        }
+        this.state = { employees: [], token: sessionStorage.getItem("accessToken") };
 
         this.addEmployee = this.addEmployee.bind(this);
         this.updateEmployee = this.updateEmployee.bind(this);
@@ -28,7 +26,7 @@ class ListEmployeeComponent extends Component {
 
     deleteEmployee(id) {
         EmployeeService.deleteEmployee(id).then((res) => {
-            this.setState({ employees: this.state.employees.filter(employee => employee.id != id) });
+            this.setState({ employees: this.state.employees.filter(employee => employee.id !== id) });
         });
     }
 
@@ -38,12 +36,27 @@ class ListEmployeeComponent extends Component {
     }
 
     componentDidMount() {
-        EmployeeService.getEmployees().then((res) => {
-            this.setState({ employees: res.data });
-        });
+        let token = this.state.token;
+        if (!token || token.trim() === "") {
+            setTimeout(() => this.props.navigate("/login"), 0);
+        } else {
+            EmployeeService.getEmployees(token).then((res) => {
+                this.setState({ employees: res.data });
+            }).catch((err) => {
+                if (err.response && (err.response.status === 401 || err.response.status === 403 || err.response.status === 500)) {
+                    sessionStorage.removeItem("accessToken");
+                    this.props.navigate("/login");
+                } else {
+                    console.error(err);
+                }
+            });;
+        }
     }
 
     render() {
+        if (!this.state.token || this.state.token.trim() === "") {
+            return null;
+        }
         return (
             <div>
                 <h2 className='text_center' style={{ margin: "50px" }}>Employees List</h2>

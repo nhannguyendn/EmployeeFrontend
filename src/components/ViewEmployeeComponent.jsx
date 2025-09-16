@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import logo from '../logo.svg';
+import PropTypes from 'prop-types';
 import employeeService from '../services/EmployeeService';
 import { withNavigation } from '../withNavigation'; // ✅ đi từ components ra src
 
@@ -11,17 +12,26 @@ class ViewEmployeeComponent extends Component {
             id: this.props.params.id,
             employee: {
 
-            }
+            },
+            token: sessionStorage.getItem("accessToken")
         }
     }
 
     componentDidMount() {
-        employeeService.getEmployeeById(this.state.id).then((res) => {
-            this.setState({ employee: res.data });
-        });
+        let token = this.state.token;
+        if (!token || token.trim() === "") {
+            setTimeout(() => this.props.navigate("/login"), 0);
+        } else {
+            employeeService.getEmployeeById(this.state.id, token).then((res) => {
+                this.setState({ employee: res.data });
+            });
+        }
     }
 
     render() {
+        if (!this.state.token || this.state.token.trim() === "") {
+            return null;
+        }
         return (
             <div>
                 <h2 style={{ margin: "20px" }}>View Employee Page</h2>

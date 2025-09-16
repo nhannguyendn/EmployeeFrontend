@@ -3,6 +3,7 @@ import logo from '../logo.svg';
 import employeeService from '../services/EmployeeService';
 import { withNavigation } from '../withNavigation';
 import { useEmployees } from '../hooks/useEmployees';
+import { useNavigate } from "react-router-dom";
 
 function ViewEmployeeComponentFunction({ params }) {
     //const [employee, setEmployee] = useState({});
@@ -14,14 +15,32 @@ function ViewEmployeeComponentFunction({ params }) {
     //   }, [id]);
 
     const id = params.id;
-    const { employee, loading, error, fetchEmployeeById } = useEmployees();
+    const { employee, loading, error, accessToken, showLoading, getAccessToken, fetchEmployeeById } = useEmployees();
+    const navigate = useNavigate();
+
     useEffect(() => {
-        fetchEmployeeById(id);
-    }, [id]);
+        getAccessToken();
+    }, []);
+
+    useEffect(() => {
+        if (accessToken) {
+            fetchEmployeeById(id, accessToken);
+        }
+    }, [id, accessToken]);
+
+    useEffect(() => {
+        if (!loading && (!accessToken || !employee)) {
+            navigate("/login");
+        }
+    }, [loading, accessToken, employee, navigate]);
+
 
     if (loading) return <p style={{ margin: "20px" }}>Đang tải dữ liệu...</p>;
     if (error) return <p style={{ margin: "20px" }}>Lỗi: {error.message}</p>;
-    if (!employee) return null;
+
+    if (!employee) {
+        return null;
+    }
 
     return (
         <div>

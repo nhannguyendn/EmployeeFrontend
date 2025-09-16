@@ -11,7 +11,8 @@ class CreateEmployeeComponent extends Component {
             id: this.props.params.id,
             firstName: '',
             lastName: '',
-            emailId: ''
+            emailId: '',
+            token: sessionStorage.getItem("accessToken")
         }
 
         this.onChangeFirstNameHandler = this.onChangeFirstNameHandler.bind(this);
@@ -21,22 +22,29 @@ class CreateEmployeeComponent extends Component {
     }
 
     componentDidMount() {
-        if (this.state.id !== 'new') {
-            EmployeeService.getEmployeeById(this.state.id).then((res) => {
-                let employee = res.data;
-                this.setState({
-                    firstName: employee.firstName,
-                    lastName: employee.lastName,
-                    emailId: employee.emailId
+        let token = this.state.token;
+        console.log("token=" + token);
+        if (!token || token.trim() === "") {
+            setTimeout(() => this.props.navigate("/login"), 0);
+        } else {
+            if (this.state.id !== 'new') {
+                EmployeeService.getEmployeeById(this.state.id, token).then((res) => {
+                    let employee = res.data;
+                    this.setState({
+                        firstName: employee.firstName,
+                        lastName: employee.lastName,
+                        emailId: employee.emailId,
+                        role: employee.role
+                    })
                 })
-            })
+            }
         }
     }
 
     saveEmployee = (e) => {
         e.preventDefault();
 
-        let employee = { firstName: this.state.firstName, lastName: this.state.lastName, emailId: this.state.emailId };
+        let employee = { firstName: this.state.firstName, lastName: this.state.lastName, emailId: this.state.emailId, role: this.state.role };
         console.log("employee => " + JSON.stringify(employee));
 
         if (this.state.id === 'new') {
@@ -44,9 +52,19 @@ class CreateEmployeeComponent extends Component {
                 this.props.navigate("/employees");
             })
         } else {
-            EmployeeService.updateEmployee(this.state.id, employee).then((res) => {
-                this.props.navigate("/employees");
-            })
+            EmployeeService.updateEmployee(this.state.id, employee, this.state.token)
+                .then((res) => {
+                    this.props.navigate("/employees");
+                })
+                .catch((err) => {
+                    if (err.response && (err.response.status === 401 || err.response.status === 403 || err.response.status === 500)) {
+                        sessionStorage.removeItem("accessToken");
+                        this.props.navigate("/login");
+                    } else {
+                        console.error(err);
+                    }
+                });
+
         }
     }
 
@@ -83,6 +101,10 @@ class CreateEmployeeComponent extends Component {
     }
 
     render() {
+        if (!this.state.token || this.state.token.trim() === "") {
+            return null;
+        }
+
         return (
             <div>
                 <div className='container' style={{ marginTop: "20px", width: "100%", marginLeft: "0px", marginRight: "0px" }}>
@@ -111,7 +133,7 @@ class CreateEmployeeComponent extends Component {
                                     <div className='form-group' style={{ marginTop: "20px" }}>
                                         <label>Email Address:</label>
                                         <input placeholder='Email Address' name='emailId' className='form-control'
-                                            value={this.state.emailId} onChange={this.onChangeEmailAddressHanlder} />
+                                            value={this.state.emailId} onChange={this.onChangeEmailAddressHanlder} disabled={this.state.id !== 'new'} />
                                     </div>
 
                                     {

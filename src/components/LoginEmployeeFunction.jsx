@@ -28,7 +28,6 @@ function LoginEmployeeFunction() {
       if (res == null || String(res).trim() === "") {
         setMessage("Email or Password is wrong");
       } else {
-        sessionStorage.setItem("accessToken", res.accessToken);
         navigate("/employees");
       }
     } catch {

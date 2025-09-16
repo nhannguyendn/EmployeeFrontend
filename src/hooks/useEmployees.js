@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import employeeService from "../services/EmployeeService";
 
 const EMPLOYEE_API_BASE_URL = "http://localhost:8888/api/v1/employees";
 
 export function useEmployees() {
   const [employees, setEmployees] = useState([]);    // list employees
   const [employee, setEmployee] = useState(null);    // single employee
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [accessToken, setAccessToken] = useState(null);
 
   // Lấy tất cả employees
   const fetchEmployees = async () => {
@@ -23,10 +25,10 @@ export function useEmployees() {
   };
 
   // Lấy employee theo ID
-  const fetchEmployeeById = async (id) => {
+  const fetchEmployeeById = async (id, token) => {
     try {
       setLoading(true);
-      const res = await axios.get(`${EMPLOYEE_API_BASE_URL}/${id}`);
+      const res = await employeeService.getEmployeeById(id, token);
       setEmployee(res.data);
     } catch (err) {
       setError(err);
@@ -53,15 +55,27 @@ export function useEmployees() {
     fetchEmployees();
   };
 
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
+  // useEffect(() => {
+  //   fetchEmployees();
+  // }, []);
+
+  const getAccessToken = (() => {
+    setLoading(true);
+    setAccessToken(sessionStorage.getItem("accessToken"));
+  });
+
+  const showLoading = (() =>{
+    setLoading(true);
+  })
 
   return {
     employees,
     employee,
     loading,
     error,
+    accessToken,
+    showLoading,
+    getAccessToken,
     fetchEmployees,
     fetchEmployeeById,
     createEmployee,

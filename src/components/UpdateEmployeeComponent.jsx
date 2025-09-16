@@ -11,7 +11,8 @@ class UpdateEmployeeComponent extends Component {
             id: this.props.params.id,
             firstName: '',
             lastName: '',
-            emailId: ''
+            emailId: '',
+            token: sessionStorage.getItem("accessToken")
         }
 
         this.onChangeFirstNameHandler = this.onChangeFirstNameHandler.bind(this);
@@ -33,14 +34,19 @@ class UpdateEmployeeComponent extends Component {
     }
 
     componentDidMount() {
-        employeeService.getEmployeeById(this.state.id).then((res) => {
-            let employee = res.data;
-            this.setState({
-                firstName: employee.firstName,
-                lastName: employee.lastName,
-                emailId: employee.emailId
+        let token = this.state.token;
+        if (!token || token.trim() === "") {
+            setTimeout(() => this.props.navigate("/login"), 0);
+        } else {
+            employeeService.getEmployeeById(this.state.id, token).then((res) => {
+                let employee = res.data;
+                this.setState({
+                    firstName: employee.firstName,
+                    lastName: employee.lastName,
+                    emailId: employee.emailId
+                })
             })
-        })
+        }
     }
 
     cancel() {
@@ -60,6 +66,10 @@ class UpdateEmployeeComponent extends Component {
     }
 
     render() {
+        if (!this.state.token || this.state.token.trim() === "") {
+            return null;
+        }
+
         return (
             <div>
                 <div className='container' style={{ marginTop: "20px", width: "100%", marginLeft: "0px", marginRight: "0px" }}>

@@ -5,10 +5,7 @@ const EMPLOYEE_API_BASE_URL_LOGIN = "http://localhost:8888/api/v1/"
 
 class EmployeeService {
 
-    async getEmployees() {
-        const token = sessionStorage.getItem('accessToken');
-        console.log("token:", token);
-        if (!token) throw new Error("Not logged in");
+    async getEmployees(token) {
         return await axios.get(EMPLOYEE_API_BASE_URL, {
             headers: { Authorization: `Bearer ${token}` },
             withCredentials: true
@@ -17,25 +14,35 @@ class EmployeeService {
 
     createEmployee(employee) {
         return axios.post(EMPLOYEE_API_BASE_URL, employee, {
-            headers: { Authorization: `Bearer ${sessionStorage.getItem('accessToken')}` }
+            headers: {
+                Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`,
+                "Content-Type": "application/json;charset=UTF-8"
+            },
+            withCredentials: true
         });
     }
 
-    getEmployeeById(id) {
-        return axios.get(EMPLOYEE_API_BASE_URL + "/" + id, {
-            headers: { Authorization: `Bearer ${sessionStorage.getItem('accessToken')}` }
+    async getEmployeeById(id, token) {
+        return await axios.get(EMPLOYEE_API_BASE_URL + "/" + id, {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true
         });
     }
 
-    updateEmployee(id, employee) {
-        return axios.put(EMPLOYEE_API_BASE_URL + "/" + id, employee, {
-            headers: { Authorization: `Bearer ${sessionStorage.getItem('accessToken')}` }
+    async updateEmployee(id, employee, token) {
+        return await axios.put(EMPLOYEE_API_BASE_URL + "/" + id, employee, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            withCredentials: true
         });
     }
 
     deleteEmployee(id) {
         return axios.delete(EMPLOYEE_API_BASE_URL + "/" + id, {
-            headers: { Authorization: `Bearer ${sessionStorage.getItem('accessToken')}` }
+            headers: { Authorization: `Bearer ${sessionStorage.getItem('accessToken')}` },
+            withCredentials: true
         });
     }
 
