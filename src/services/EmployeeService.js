@@ -59,6 +59,24 @@ class EmployeeService {
             return null;
         }
     }
+
+    async loginGoogle(googleToken) {
+        try {
+            console.log("token goole:", googleToken);
+            const res = await axios.post(EMPLOYEE_API_BASE_URL_LOGIN + "auth/login-google", { googleToken }, {
+                withCredentials: true
+            });
+            let accessToken = res.data.accessToken
+            sessionStorage.setItem('accessToken', accessToken);
+            sessionStorage.setItem('refreshToken', res.data.refreshToken);
+            console.log("token:", accessToken);
+            return accessToken;
+        } catch (err) {
+            console.error("Login error:", err);
+            //throw err;
+            return null;
+        }
+    }
 }
 
 const employeeService = new EmployeeService();

@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import employeeService from "../services/EmployeeService";
+import LoginGoogleButton from "./LoginGoogleComponent";
 
 function LoginEmployeeFunction() {
   const [emailId, setEmailId] = useState("");
@@ -8,6 +9,13 @@ function LoginEmployeeFunction() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("accessToken");
+    if (token && token.trim() !== "") {
+      requestAnimationFrame(() => navigate("/employees"));
+    }
+  }, [navigate]);
 
   const validate = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -35,6 +43,10 @@ function LoginEmployeeFunction() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loginGoogle = (res, err) => {
+    if (err || !res) setMessage("Login Google failed"); else navigate("/employees");
   };
 
   return (
@@ -93,15 +105,25 @@ function LoginEmployeeFunction() {
               >
                 {loading ? "Please wait..." : "Login"}
               </button>
+
               <button
+                hidden="true"
                 type="button"
                 className="btn-cancel"
                 style={{ marginTop: 10, marginLeft: 10 }}
-                onClick={() => console.log("Login google")}
+                onClick={loginGoogle}
                 disabled={loading}
               >
                 Login Google
               </button>
+
+              <LoginGoogleButton style={{ width: 400, margin: "20px auto 0 auto", display: "block" }} onLoginResult={(res, err) => {
+                loginGoogle(res, err);
+              }} onClick={() => {
+                setMessage("");
+              }}
+              />
+
             </form>
           </div>
         </div>
