@@ -63,7 +63,7 @@ public class EmployeeController {
 
     /**
      * get employees
-     * 
+     *
      * @return listEmployees
      */
     @GetMapping("/employees")
@@ -142,14 +142,14 @@ public class EmployeeController {
     /**
      * Update employee with id
      */
-    @PutMapping("/employees/{employeeId}")
+    @PutMapping(value = "/employees/{employeeId}", consumes = {"application/json", "application/json;charset=UTF-8"})
     @Transactional("employeeTransactionManager")
     public ResponseEntity<Employee> updateEmployees(@PathVariable Long employeeId,
-            @RequestBody Employee employeeDetails) {
+                                                    @RequestBody EmployeeDTO employeeDetails) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResoureNotFoundException("Not found employee id=" + employeeId));
 
-        employee.setEmailId(employeeDetails.getEmailId());
+        //employee.setEmailId(employeeDetails.getEmailId());
         employee.setFirstName(employeeDetails.getFirstName());
         employee.setLastName(employeeDetails.getLastName());
         Employee employeeUpdated = employeeRepository.save(employee);

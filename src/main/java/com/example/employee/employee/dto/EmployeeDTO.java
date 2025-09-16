@@ -9,7 +9,7 @@ import com.example.employee.salary.model.Salary;
 
 public class EmployeeDTO {
     private Long id;
-    private String fistName;
+    private String firstName;
     private String lastName;
     private String emailId;
     private TeamDTO teamDTO;
@@ -22,14 +22,14 @@ public class EmployeeDTO {
 
     public EmployeeDTO(Long id, String firstName, String lastName, String emailId) {
         this.id = id;
-        this.fistName = firstName;
+        this.firstName = firstName;
         this.lastName = lastName;
         this.emailId = emailId;
     }
 
     public EmployeeDTO(Long id, String firstName, String lastName, String emailId, TeamDTO teamDTO) {
         this.id = id;
-        this.fistName = firstName;
+        this.firstName = firstName;
         this.lastName = lastName;
         this.emailId = emailId;
         this.teamDTO = teamDTO;
@@ -39,8 +39,8 @@ public class EmployeeDTO {
         return emailId;
     }
 
-    public String getFistName() {
-        return fistName;
+    public String getFirstName() {
+        return firstName;
     }
 
     public Long getId() {
@@ -55,8 +55,8 @@ public class EmployeeDTO {
         this.emailId = emailId;
     }
 
-    public void setFistName(String fistName) {
-        this.fistName = fistName;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
     public void setId(Long id) {
