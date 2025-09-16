@@ -13,6 +13,20 @@ class ListEmployeeComponent extends Component {
         this.updateEmployee = this.updateEmployee.bind(this);
         this.deleteEmployee = this.deleteEmployee.bind(this);
         this.viewEmployee = this.viewEmployee.bind(this);
+        this.logout = this.logout.bind(this);
+    }
+
+    logout() {
+        EmployeeService.logout(this.state.token).then((res) => {
+            this.props.navigate("/login");
+        }).catch((err) => {
+            if (err.response && (err.response.status === 401 || err.response.status === 403 || err.response.status === 500)) {
+                sessionStorage.removeItem("accessToken");
+                this.props.navigate("/login");
+            } else {
+                console.error(err);
+            }
+        });;
     }
 
     addEmployee = (e) => {
@@ -60,8 +74,9 @@ class ListEmployeeComponent extends Component {
         return (
             <div>
                 <h2 className='text_center' style={{ margin: "50px" }}>Employees List</h2>
-                <div className='row'>
-                    <button className='btn btn-primary' onClick={this.addEmployee} style={{ width: "auto", margin: "10px" }}>Add Employee</button>
+                <div className='row' style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
+                    <button className='btn btn-primary' onClick={this.addEmployee} style={{ width: "auto" }}>Add Employee</button>
+                    <button className='btn-cancel' onClick={this.logout} style={{ width: "auto" }}>Logout</button>
                 </div>
                 <div className='row'>
                     <table className='table table-striped table-bordered'>
