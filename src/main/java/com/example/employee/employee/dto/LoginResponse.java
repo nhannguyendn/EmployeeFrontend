@@ -7,6 +7,7 @@ import lombok.Data;
 @Builder
 public class LoginResponse {
     private boolean status;
+    private String message;
     private String accessToken;
     private String refreshToken;
 }

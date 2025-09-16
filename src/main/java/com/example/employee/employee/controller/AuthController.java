@@ -1,5 +1,8 @@
 package com.example.employee.employee.controller;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,6 +10,11 @@ import com.example.employee.employee.model.LoginType;
 import com.example.employee.security.oauth2.CustomOAuth2User;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +52,9 @@ public class AuthController {
     private final CustomUserDetailsService customUserDetailsService;
     private final UserRepository userRepository;
 
+    @Value("${spring.security.oauth2.client.registration.google.client-id}")
+    private String googleClientId;
+
     @PostMapping("/register")
     @Transactional("employeeTransactionManager")
     public ResponseEntity<Employee> register(@RequestBody RegisterRequest request) {
@@ -54,6 +65,47 @@ public class AuthController {
     @Transactional("employeeTransactionManager")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/login-google")
+    public ResponseEntity<LoginResponse> loginGoogle(@RequestBody Map<String, String> body) {
+        String googleToken = body.get("googleToken");
+
+        try {
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new JacksonFactory())
+                    .setAudience(Collections.singletonList(googleClientId))
+                    .build();
+
+            GoogleIdToken idToken = verifier.verify(googleToken);
+            if (idToken == null) {
+                return ResponseEntity.ok(LoginResponse.builder()
+                        .status(false)
+                        .message("Invalid Google token")
+                        .accessToken(null)
+                        .build());
+            }
+
+            GoogleIdToken.Payload payload = idToken.getPayload();
+            String email = payload.getEmail();
+            String name = (String) payload.get("name");
+            String firstName = (String) payload.get("given_name");
+            String lastName = (String) payload.get("family_name");
+
+            User user = customUserDetailsService.loadOrCreateUserFromGoogleLogin(email, name, firstName, lastName);
+            String token = jwtService.generateToken(user);
+            String refreshToken = jwtService.generateRefreshToken(user);
+            return ResponseEntity.ok(LoginResponse.builder()
+                    .status(token != null)
+                    .accessToken(token)
+                    .refreshToken(refreshToken)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.ok(LoginResponse.builder()
+                    .status(false)
+                    .message("Google token verification failed")
+                    .accessToken(null)
+                    .build());
+        }
     }
 
     @PostMapping("/logout")
@@ -131,7 +183,6 @@ public class AuthController {
             System.err.println("Failed to revoke Google token: " + e.getMessage());
         }
     }
-
 
     @PostMapping("/refresh-token")
     public ResponseEntity<Map<String, Object>> refreshToken(@RequestBody Map<String, String> request) {

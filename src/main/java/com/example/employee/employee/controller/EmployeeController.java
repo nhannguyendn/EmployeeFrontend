@@ -67,7 +67,7 @@ public class EmployeeController {
      * @return listEmployees
      */
     @GetMapping("/employees")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     //@Secured("ROLE_ADMIN")
     public List<Employee> getAllEmployees() {
         logger.info("getAllEmployees");
