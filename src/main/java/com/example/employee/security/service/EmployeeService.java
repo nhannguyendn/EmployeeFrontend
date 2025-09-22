@@ -1,5 +1,6 @@
 package com.example.employee.security.service;
 
+import com.example.employee.employee.dto.EmployeeDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,21 @@ public class EmployeeService {
         card.setCardNumber(newCardNumber);
         // card.setEmployee(employee);
 
+        employee.setCard(card);
+
+        return employeeRepository.save(employee);
+    }
+
+    public Employee createNewEmployee(EmployeeDTO employeeDto) {
+        String newCardNumber = generateNextCardNumber();
+        EmployeeCard card = new EmployeeCard();
+        card.setCardNumber(newCardNumber);
+        // card.setEmployee(employee);
+
+        Employee employee = new Employee();
+        employee.setFirstName(employeeDto.getFirstName());
+        employee.setLastName(employeeDto.getLastName());
+        employee.setEmailId(employeeDto.getEmailId());
         employee.setCard(card);
 
         return employeeRepository.save(employee);

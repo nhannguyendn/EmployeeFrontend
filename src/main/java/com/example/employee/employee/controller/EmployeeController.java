@@ -125,7 +125,7 @@ public class EmployeeController {
      */
     @PostMapping("/employees")
     @Transactional("employeeTransactionManager")
-    public Employee createEmployee(@RequestBody Employee employee) {
+    public Employee createEmployee(@RequestBody EmployeeDTO employee) {
         return employeeService.createNewEmployee(employee);
     }
 
