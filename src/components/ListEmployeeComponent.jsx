@@ -55,7 +55,7 @@ class ListEmployeeComponent extends Component {
             setTimeout(() => this.props.navigate("/login"), 0);
         } else {
             EmployeeService.getEmployees(token).then((res) => {
-                this.setState({ employees: res.data });
+                this.setState({ employees: res.data.data });
             }).catch((err) => {
                 if (err.response && (err.response.status === 401 || err.response.status === 403 || err.response.status === 500)) {
                     sessionStorage.removeItem("accessToken");

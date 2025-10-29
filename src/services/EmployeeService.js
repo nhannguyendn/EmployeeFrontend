@@ -49,9 +49,9 @@ class EmployeeService {
     async login(email, password) {
         try {
             const res = await axios.post(EMPLOYEE_API_BASE_URL + "auth/login", { email, password });
-            sessionStorage.setItem('accessToken', res.data.accessToken);
-            sessionStorage.setItem('refreshToken', res.data.refreshToken);
-            return res.data.accessToken;
+            sessionStorage.setItem('accessToken', res.data.data.accessToken);
+            sessionStorage.setItem('refreshToken', res.data.data.refreshToken);
+            return res.data.data.accessToken;
         } catch (err) {
             console.error("Login error:", err);
             //throw err;
@@ -64,9 +64,9 @@ class EmployeeService {
             const res = await axios.post(EMPLOYEE_API_BASE_URL + "auth/login-google", { googleToken }, {
                 withCredentials: true
             });
-            let accessToken = res.data.accessToken
+            let accessToken = res.data.data.accessToken
             sessionStorage.setItem('accessToken', accessToken);
-            sessionStorage.setItem('refreshToken', res.data.refreshToken);
+            sessionStorage.setItem('refreshToken', res.data.data.refreshToken);
             return accessToken;
         } catch (err) {
             console.error("Login error:", err);
@@ -86,7 +86,7 @@ class EmployeeService {
                     withCredentials: true
                 }
             );
-            if (res.data.result) {
+            if (res.data.success) {
                 sessionStorage.removeItem("accessToken");
                 sessionStorage.removeItem("refreshToken");
                 return true;
