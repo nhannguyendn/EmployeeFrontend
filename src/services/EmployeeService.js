@@ -98,6 +98,24 @@ class EmployeeService {
             return false;
         }
     }
+
+    async uploadAvatar(file, employeeId) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("employeeId", employeeId);
+
+        return await axios.post(
+            EMPLOYEE_API_BASE_URL_EMPLOYEE + "/avatar/local",
+            formData,
+            {
+                headers: {
+                    Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`,
+                    "Content-Type": "multipart/form-data",
+                },
+                withCredentials: true,
+            }
+        );
+    }
 }
 
 const employeeService = new EmployeeService();
