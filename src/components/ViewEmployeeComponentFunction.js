@@ -28,7 +28,12 @@ function ViewEmployeeComponentFunction({ params }) {
     }, [loading, accessToken, employee, navigate]);
 
     useEffect(() => {
-        if (employee && employee.avatar) updateAvatar(employee.avatar);
+        if (employee && employee.avatar) {
+            const avatarUrl = employee.avatar.startsWith('http')
+                ? employee.avatar
+                : `/api/v1/employees/serve/${id}/${employee.avatar}`; // need call api to get image link
+            updateAvatar(avatarUrl);
+        }
         else updateAvatar(logo);
     }, [employee]);
 
